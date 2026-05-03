@@ -8,6 +8,7 @@ A Python-based AI Video Agent that creates short-form videos (Reels/Shorts) from
 - **Step 2**: Download portrait videos from Pexels based on keywords
 - **Step 3**: Assemble final video with FFmpeg
 - **Step 4**: Add professional captions with word-level timing
+- **🎨 Web Interface**: Easy-to-use Streamlit frontend
 
 ## Setup
 
@@ -47,25 +48,41 @@ A Python-based AI Video Agent that creates short-form videos (Reels/Shorts) from
 
 ## Usage
 
-### Step 1: Transcribe Audio & Generate Video Map
+### 🎨 Web Interface (Recommended)
+```bash
+streamlit run app.py
+```
+Then open your browser to the URL shown (usually http://localhost:8501)
+
+**Features:**
+- Upload audio file
+- Toggle captions on/off
+- Upload logo (optional)
+- Real-time progress tracking
+- Download final video
+- Video preview
+
+### Command Line (Advanced)
+
+#### Step 1: Transcribe Audio & Generate Video Map
 ```bash
 python src/main.py
 ```
 This creates `video_map.json` with timestamped segments and visual keywords.
 
-### Step 2: Download Videos from Pexels
+#### Step 2: Download Videos from Pexels
 ```bash
 python src/download_videos.py
 ```
 This downloads portrait videos to `/assets` folder based on keywords.
 
-### Step 3: Assemble Final Video
+#### Step 3: Assemble Final Video
 ```bash
 python src/assemble_video.py
 ```
 This creates `draft_video.mp4` with trimmed clips, 9:16 aspect ratio, and synced audio.
 
-### Step 4: Add Professional Captions
+#### Step 4: Add Professional Captions
 ```bash
 python src/add_captions.py
 ```
@@ -83,6 +100,7 @@ ChitraAI/
 │   ├── download_videos.py # Step 2: Video download
 │   ├── assemble_video.py  # Step 3: Video assembly
 │   └── add_captions.py    # Step 4: Caption generation
+├── app.py               # 🎨 Streamlit Web Interface
 ├── assets/              # Downloaded video clips
 ├── temp/                # Temporary processed clips
 ├── video_map.json       # Generated video map
