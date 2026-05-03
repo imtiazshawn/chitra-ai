@@ -7,6 +7,7 @@ A Python-based AI Video Agent that creates short-form videos (Reels/Shorts) from
 - **Step 1**: Transcribe audio and generate video map with AI
 - **Step 2**: Download portrait videos from Pexels based on keywords
 - **Step 3**: Assemble final video with FFmpeg
+- **Step 4**: Add professional captions with word-level timing
 
 ## Setup
 
@@ -64,6 +65,14 @@ python src/assemble_video.py
 ```
 This creates `draft_video.mp4` with trimmed clips, 9:16 aspect ratio, and synced audio.
 
+### Step 4: Add Professional Captions
+```bash
+python src/add_captions.py
+```
+This creates `final_output.mp4` with word-level captions and logo overlay.
+
+**Optional**: Place `logo.png` in the project root for branding overlay.
+
 ## Project Structure
 
 ```
@@ -72,11 +81,14 @@ ChitraAI/
 ├── src/                  # Source code
 │   ├── main.py          # Step 1: Transcription & mapping
 │   ├── download_videos.py # Step 2: Video download
-│   └── assemble_video.py  # Step 3: Video assembly
+│   ├── assemble_video.py  # Step 3: Video assembly
+│   └── add_captions.py    # Step 4: Caption generation
 ├── assets/              # Downloaded video clips
 ├── temp/                # Temporary processed clips
 ├── video_map.json       # Generated video map
-├── draft_video.mp4      # Final output video
+├── draft_video.mp4      # Assembled video
+├── final_output.mp4     # Final video with captions
+├── logo.png             # Optional branding logo
 ├── requirements.txt     # Dependencies
 ├── .env                 # API keys (not in git)
 ├── .env.example         # Environment template
