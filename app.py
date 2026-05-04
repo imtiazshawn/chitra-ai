@@ -24,7 +24,7 @@ from assemble_video import (
 )
 from add_captions import (
     create_word_segments,
-    create_ass_subtitle,
+    create_dynamic_highlight_subtitles,
     burn_subtitles_and_logo
 )
 
@@ -256,17 +256,17 @@ if st.button("🎬 Generate Video", type="primary", use_container_width=True):
             final_output = draft_output
             
             if add_captions:
-                status_text.text("✍️ Step 4/4: Adding professional captions...")
+                status_text.text("✍️ Step 4/4: Adding dynamic captions...")
                 progress_bar.progress(85)
                 
                 word_segments = create_word_segments(video_map)
-                subtitle_file = create_ass_subtitle(word_segments)
+                subtitle_file = create_dynamic_highlight_subtitles(word_segments)
                 
                 final_output = 'final_output.mp4'
                 logo_for_caption = logo_path if logo_path and os.path.exists(logo_path) else 'logo.png'
                 burn_subtitles_and_logo(draft_output, subtitle_file, logo_for_caption, final_output)
                 
-                st.success("✓ Captions added")
+                st.success("✓ Dynamic captions added")
             else:
                 status_text.text("✓ Step 4/4: Skipped (captions not requested)")
             

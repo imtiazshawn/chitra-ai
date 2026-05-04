@@ -60,6 +60,12 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
     """Assemble video using FFmpeg complex filter for perfect sync."""
     print("\nAssembling video with complex filter...")
     
+    # Get total expected duration from audio
+    audio_duration = get_video_duration(audio_path)
+    
+    # Calculate total segment duration
+    total_segment_duration = sum(seg['end_time'] - seg['start_time'] for seg in video_map)
+    
     # Prepare inputs and filter complex
     inputs = []
     filter_parts = []
@@ -76,8 +82,14 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
         
         inputs.extend(['-i', clip_path])
         
+        # For the last clip, adjust duration if needed to match audio
+        if i == len(video_map) - 1 and total_segment_duration < audio_duration:
+            # Extend last clip to fill remaining time
+            remaining_time = audio_duration - (segment['start_time'])
+            duration = remaining_time
+            print(f"  Extending last clip to {duration:.2f}s to match audio duration")
+        
         # Build filter for this clip with exact timing and consistent format
-        # Format: trim to exact duration, set fps, scale, crop, set SAR
         filter_parts.append(
             f"[{i}:v]trim=start=0:end={duration},setpts=PTS-STARTPTS,"
             f"fps=30,format=yuv420p,scale=1080:1920:force_original_aspect_ratio=increase,"
@@ -88,10 +100,7 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
     concat_inputs = ''.join([f"[v{i}]" for i in range(len(video_map))])
     filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(video_map)}:v=1:a=0[outv]"
     
-    # Get total expected duration from audio
-    audio_duration = get_video_duration(audio_path)
-    
-    # Build FFmpeg command
+    # Build FFmpeg command with -shortest to prevent trailing frames
     cmd = [
         'ffmpeg',
         *inputs,
@@ -99,13 +108,13 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
         '-filter_complex', filter_complex,
         '-map', '[outv]',
         '-map', f'{len(video_map)}:a',
-        '-t', str(audio_duration),  # Force exact audio duration
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '23',
         '-c:a', 'aac',
         '-b:a', '192k',
-        '-r', '30',  # Consistent frame rate
+        '-r', '30',
+        '-shortest',  # Prevent trailing still frames
         '-y',
         output_path
     ]

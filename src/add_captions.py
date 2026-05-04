@@ -13,6 +13,19 @@ def format_time_ass(seconds):
     return f"{hours}:{minutes:02d}:{secs:02d}.{centiseconds:02d}"
 
 
+def get_highlight_color(caption_style):
+    """Get highlight color based on caption style."""
+    color_map = {
+        'energetic': '&H00FFFF00',  # Bright Yellow
+        'calm': '&H00FFB6C1',       # Light Pink
+        'professional': '&H0000D4FF', # Cyan
+        'dramatic': '&H000000FF',   # Red
+        'playful': '&H00FF00FF',    # Magenta
+        'tech': '&H0000FF00'        # Neon Green
+    }
+    return color_map.get(caption_style, '&H0000FFFF')  # Default: Yellow
+
+
 def split_into_word_chunks(text, max_words=3):
     """Split text into chunks of max_words."""
     words = text.strip().split()
@@ -62,27 +75,13 @@ def create_word_segments(video_map):
     return word_segments
 
 
-def get_style_config(caption_style):
-    """Get font and styling based on caption_style."""
-    style_map = {
-        'energetic': {'font': 'Inter', 'weight': 'Bold', 'size': 28},
-        'calm': {'font': 'Inter', 'weight': 'Bold', 'size': 26},
-        'professional': {'font': 'Inter', 'weight': 'Bold', 'size': 27},
-        'dramatic': {'font': 'Inter', 'weight': 'Bold', 'size': 30},
-        'playful': {'font': 'Inter', 'weight': 'Bold', 'size': 28},
-        'tech': {'font': 'JetBrains Mono', 'weight': 'Bold', 'size': 26}
-    }
+def create_dynamic_highlight_subtitles(word_segments, output_file='captions.ass'):
+    """Create ASS subtitle with dynamic word-level highlighting."""
+    print("Creating dynamic highlight subtitle file...")
     
-    return style_map.get(caption_style, style_map['professional'])
-
-
-def create_ass_subtitle(word_segments, output_file='captions.ass'):
-    """Create professional ASS subtitle file."""
-    print("Creating professional subtitle file...")
-    
-    # ASS file header
+    # ASS file header with larger base font size (increased by 15%)
     ass_content = """[Script Info]
-Title: AI Video Captions
+Title: AI Video Captions - Dynamic Highlight
 ScriptType: v4.00+
 WrapStyle: 0
 PlayResX: 1080
@@ -91,37 +90,57 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Inter,27,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2,1,2,50,50,180,1
+Style: Default,Inter,32,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2.5,1,2,50,50,180,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
     
-    # Add each word segment
+    # Add each word segment with dynamic highlighting
     for segment in word_segments:
-        start = format_time_ass(segment['start'])
-        end = format_time_ass(segment['end'])
-        text = segment['text'].replace('\n', ' ').strip()
+        words = segment['text'].split()
+        start = segment['start']
+        end = segment['end']
+        duration = end - start
+        word_duration = duration / len(words)
         
-        # Escape special characters for ASS format
-        text = text.replace('\\', '\\\\')
+        highlight_color = get_highlight_color(segment['style'])
         
-        # Make text uppercase and bold for impact
-        text = text.upper()
-        
-        ass_content += f"Dialogue: 0,{start},{end},Default,,0,0,0,,{text}\n"
+        # Create individual subtitle for each word timing
+        for word_idx, word in enumerate(words):
+            word_start = start + (word_idx * word_duration)
+            word_end = word_start + word_duration
+            
+            # Build the text with highlighting for current word
+            formatted_words = []
+            for i, w in enumerate(words):
+                if i == word_idx:
+                    # Active word: larger size (120%) and highlight color with pop effect
+                    formatted_words.append(
+                        f"{{\\fscx120\\fscy120\\c{highlight_color}\\t(0,100,\\fscx125\\fscy125)\\t(100,200,\\fscx120\\fscy120)}}{w.upper()}{{\\r}}"
+                    )
+                else:
+                    # Inactive words: normal size and white
+                    formatted_words.append(w.upper())
+            
+            text = ' '.join(formatted_words)
+            
+            start_time = format_time_ass(word_start)
+            end_time = format_time_ass(word_end)
+            
+            ass_content += f"Dialogue: 0,{start_time},{end_time},Default,,0,0,0,,{text}\n"
     
     # Write to file
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(ass_content)
     
-    print(f"✓ Subtitle file created: {output_file}")
+    print(f"✓ Dynamic highlight subtitle file created: {output_file}")
     return output_file
 
 
 def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video):
     """Burn subtitles and overlay logo using FFmpeg."""
-    print("\nBurning subtitles and adding logo overlay...")
+    print("\nBurning dynamic subtitles and adding logo overlay...")
     
     # Check if logo exists
     if not os.path.exists(logo_path):
@@ -148,6 +167,7 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-crf', '23',
+            '-shortest',  # Prevent trailing frames
             '-y',
             output_video
         ]
@@ -161,6 +181,7 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-crf', '23',
+            '-shortest',  # Prevent trailing frames
             '-y',
             output_video
         ]
@@ -176,7 +197,7 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
 
 
 def main():
-    print("=== Professional Caption Generator ===\n")
+    print("=== Dynamic Caption Generator ===\n")
     
     # Check for required files
     input_video = 'draft_video.mp4'
@@ -199,9 +220,9 @@ def main():
     word_segments = create_word_segments(video_map)
     print(f"✓ Created {len(word_segments)} word segments (max 3 words each)\n")
     
-    # Create ASS subtitle file
-    print("Step 2: Generating professional subtitle file...")
-    subtitle_file = create_ass_subtitle(word_segments)
+    # Create dynamic highlight subtitle file
+    print("Step 2: Generating dynamic highlight subtitle file...")
+    subtitle_file = create_dynamic_highlight_subtitles(word_segments)
     print()
     
     # Check for logo
@@ -219,8 +240,8 @@ def main():
         print(f"\n{'='*40}")
         print(f"✓ Video created successfully!")
         print(f"✓ Output: {output_video}")
-        print(f"✓ Captions: Word-level timing (max 3 words)")
-        print(f"✓ Style: Professional with outline & shadow")
+        print(f"✓ Captions: Dynamic word-level highlighting")
+        print(f"✓ Style: Professional with pop animation")
         if os.path.exists(logo_path):
             print(f"✓ Logo: Top-right corner overlay")
         print(f"\n🎬 Your video is ready for upload!")
