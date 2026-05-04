@@ -71,13 +71,15 @@ st.markdown("""
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2rem;
+        margin-bottom: 1.25rem;
     }
+    .status-bar .neon-title { margin: 0; line-height: 1.1; }
     
     .system-status {
         color: #FF6B35;
         font-size: 0.9rem;
         text-align: right;
+        line-height: 1.2;
     }
     
     .status-dot {
@@ -99,14 +101,15 @@ st.markdown("""
     .status-cards {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 2rem;
+        gap: 0.75rem;
+        margin-bottom: 2.5rem;
     }
     
     .status-card {
         background: rgba(255, 107, 53, 0.05);
         border: 1px solid;
         padding: 1rem;
+        border-radius: 4px;
     }
     
     .status-card.connected {
@@ -136,103 +139,240 @@ st.markdown("""
         text-shadow: none;
     }
     
-    .input-panel {
+    /* Native Streamlit bordered containers for left/right panels (top level only) */
+    div[data-testid="column"]:first-child > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
         background: rgba(255, 107, 53, 0.03);
-        border: 1px solid #222;
-        padding: 1.5rem;
+        border: 1px solid #333;
+        border-right: 1px solid rgba(255, 107, 53, 0.35);
+        box-shadow: 1px 0 0 rgba(255, 107, 53, 0.06), 10px 0 28px rgba(255, 107, 53, 0.06);
+        padding: 1.05rem 1rem 1.05rem;
+    }
+    div[data-testid="column"]:last-child > div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: rgba(255, 107, 53, 0.03);
+        border: 1px solid #333;
+        border-left: 1px solid rgba(255, 107, 53, 0.35);
+        box-shadow: -1px 0 0 rgba(255, 107, 53, 0.06), -10px 0 28px rgba(255, 107, 53, 0.06);
+        padding: 1.05rem 1rem 1.05rem;
     }
     
     .panel-title {
         color: #FF6B35;
-        font-size: 0.9rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.85rem;
+        margin-bottom: 1.25rem;
         text-transform: uppercase;
         letter-spacing: 2px;
-    }
-    
-    .upload-zone {
-        border: 2px dashed #333;
-        padding: 2rem 1rem;
-        text-align: center;
-        margin-bottom: 1.5rem;
-        background: rgba(0, 0, 0, 0.3);
-        transition: all 0.3s;
-    }
-    
-    .upload-zone:hover {
-        border-color: #FF6B35;
-        background: rgba(255, 107, 53, 0.05);
+        font-weight: 700;
     }
     
     .upload-label {
-        color: #666;
-        font-size: 0.85rem;
-        margin-bottom: 0.5rem;
+        color: #888;
+        font-size: 0.75rem;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Streamlit file uploader -> designed drop zone */
+    div[data-testid="column"]:first-child [data-testid="stFileUploader"] {
+        margin-bottom: 1.25rem;
+    }
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] {
+        border: 2px dashed rgba(255, 255, 255, 0.16) !important;
+        background: rgba(0, 0, 0, 0.35) !important;
+        border-radius: 6px !important;
+        padding: 0 !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        box-shadow: none;
+    }
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"]:hover {
+        border-color: rgba(255, 107, 53, 0.65) !important;
+        background: rgba(255, 107, 53, 0.05) !important;
+        box-shadow: 0 0 18px rgba(255, 107, 53, 0.09);
+    }
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] > div {
+        display: grid !important;
+        place-items: center !important;
+        min-height: 148px;
+        padding: 22px 18px !important;
+    }
+    /* Hide Streamlit's default helper text; we provide pixel-perfect labels */
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] small,
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] span,
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] p,
+    div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] button {
+        display: none !important;
+    }
+    /* Two uploaders in left panel: style their "designed" content via ::before */
+    div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(1) [data-testid="stFileUploaderDropzone"]::before {
+        content: "↑\A\A AUDIO SOURCE\A MP3 • WAV • M4A";
+        white-space: pre;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.78rem;
+        letter-spacing: 1px;
+        line-height: 1.35;
+        text-shadow: 0 0 12px rgba(255, 107, 53, 0.18);
+    }
+    div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(1) [data-testid="stFileUploaderDropzone"]::before {
+        display: block;
+    }
+    div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(1) [data-testid="stFileUploaderDropzone"] > div {
+        min-height: 172px;
+    }
+    div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(2) [data-testid="stFileUploaderDropzone"]::before {
+        content: "◇\A\A BRAND LOGO\A OPTIONAL • PNG • JPG";
+        white-space: pre;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.82);
+        font-size: 0.78rem;
+        letter-spacing: 1px;
+        line-height: 1.35;
+        text-shadow: 0 0 12px rgba(255, 107, 53, 0.14);
     }
     
     .toggle-container {
-        padding: 1rem;
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid #222;
-        margin-bottom: 1.5rem;
+        padding: 1.05rem 1.1rem;
+        background: rgba(255, 107, 53, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        margin: 1.1rem 0 1.25rem;
+        text-align: left;
+        border-radius: 6px;
+        box-shadow: none;
+        cursor: pointer;
     }
-    
-    .agent-console {
-        background: rgba(255, 107, 53, 0.03);
-        border: 1px solid #222;
-        padding: 1.5rem;
-    }
-    
-    .agent-item {
+    .toggle-title {
         display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
-        position: relative;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 0.6rem;
+    }
+    .toggle-title .label {
+        color: rgba(255, 255, 255, 0.86);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+    }
+    .toggle-title .hint {
+        color: rgba(255, 107, 53, 0.85);
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        border: 1px solid rgba(255, 107, 53, 0.55);
+        padding: 0.2rem 0.5rem;
+    }
+    .toggle-container:hover {
+        border-color: rgba(255, 107, 53, 0.55);
+        box-shadow: 0 0 0 1px rgba(255, 107, 53, 0.2), 0 0 22px rgba(255, 107, 53, 0.09);
+    }
+    /* Tighten checkbox area so it feels like a module, not a raw control */
+    .toggle-container [data-testid="stCheckbox"] {
+        margin-top: -0.05rem;
+        display: flex;
+        justify-content: flex-start;
+    }
+    .toggle-container [data-testid="stCheckbox"] label {
+        width: auto;
+        padding: 0;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.45rem;
+        line-height: 1;
+        color: rgba(255, 255, 255, 0.88) !important;
+        font-size: 0.84rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .toggle-container [data-testid="stCheckbox"] input {
+        margin-top: 0 !important;
     }
     
-    .agent-item:not(:last-child)::after {
+    .agent-list {
+        position: relative;
+        padding-left: 0.25rem;
+        margin-top: 0.25rem;
+    }
+    /* One continuous vertical connector line */
+    .agent-list::before {
         content: '';
         position: absolute;
-        left: 1.25rem;
-        top: 3rem;
+        left: 1.05rem;
+        top: 0.55rem;
+        bottom: 0.55rem;
         width: 2px;
-        height: calc(100% - 1rem);
-        background: linear-gradient(180deg, #FF6B35 0%, #FF0080 100%);
-        opacity: 0.3;
+        background: linear-gradient(180deg, rgba(255, 107, 53, 0.55) 0%, rgba(255, 0, 128, 0.55) 100%);
+        opacity: 0.28;
+        filter: drop-shadow(0 0 6px rgba(255, 107, 53, 0.25));
+        border-radius: 2px;
     }
+
+    .agent-item {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1.15rem;
+        position: relative;
+        align-items: center;
+    }
+    /* Remove per-item line segments; we use a single continuous line now */
+    .agent-item::after { display: none; }
     
     .agent-number {
         color: #FF6B35;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         font-weight: 700;
-        min-width: 2.5rem;
+        min-width: 2rem;
         text-shadow: 0 0 10px rgba(255, 107, 53, 0.5);
+        line-height: 1.0;
+        padding-top: 0.1rem;
     }
     
     .agent-content {
         flex: 1;
     }
     
+    .agent-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.35rem;
+    }
+    
     .agent-name {
         color: #FFF;
-        font-size: 1rem;
+        font-size: 0.98rem;
         font-weight: 700;
-        margin-bottom: 0.5rem;
+        letter-spacing: 0.5px;
     }
     
     .agent-desc {
         color: #666;
-        font-size: 0.8rem;
-        margin-bottom: 0.5rem;
+        font-size: 0.74rem;
+        line-height: 1.55;
     }
     
     .agent-status {
-        display: inline-block;
         color: #FF6B35;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         padding: 0.25rem 0.75rem;
         border: 1px solid #FF6B35;
         text-shadow: 0 0 5px rgba(255, 107, 53, 0.5);
+        white-space: nowrap;
+        border-radius: 999px;
+        letter-spacing: 1px;
+    }
+    
+    .agent-item.final-output {
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding-top: 1.1rem;
+        margin-top: 0.9rem;
+    }
+    
+    .final-output-body {
+        margin-top: 0.85rem;
+        padding: 1rem;
+        border: 1px solid rgba(255, 107, 53, 0.35);
+        background: rgba(255, 107, 53, 0.06);
+        border-radius: 6px;
+        box-shadow: inset 0 0 0 1px rgba(255, 107, 53, 0.08);
     }
     
     .agent-status.running {
@@ -245,23 +385,46 @@ st.markdown("""
     }
     
     .system-log {
-        background: rgba(0, 0, 0, 0.5);
-        border: 1px solid #222;
-        padding: 1.5rem;
-        margin-top: 2rem;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid #333;
+        padding: 1.05rem 1.15rem;
+        border-radius: 6px;
+        box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
     }
     
     .log-title {
         color: #FF6B35;
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         margin-bottom: 1rem;
         text-transform: uppercase;
         letter-spacing: 2px;
+        font-weight: 700;
+    }
+    .log-title.terminal {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 0.75rem;
+    }
+    .term-dots {
+        display: inline-flex;
+        gap: 6px;
+        transform: translateY(-1px);
+    }
+    .term-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        box-shadow: 0 0 10px rgba(255, 107, 53, 0.12);
     }
     
     .log-content {
-        color: rgba(255, 107, 53, 0.4);
-        font-size: 0.85rem;
+        color: rgba(255, 107, 53, 0.6);
+        font-size: 0.8rem;
+        line-height: 1.8;
+        font-family: 'JetBrains Mono', monospace;
+        text-shadow: 0 0 10px rgba(255, 107, 53, 0.08);
     }
     
     button[kind="primary"] {
@@ -290,7 +453,7 @@ st.markdown(f"""
     <div class="neon-title">⚡ CHITRA AI PIPELINE</div>
     <div class="system-status">
         <div><span class="status-dot"></span>STATUS: ONLINE</div>
-        <div style="margin-top: 0.25rem;">AGENTS: 04</div>
+        <div style="margin-top: 0.15rem;">AGENTS: 04</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -320,91 +483,107 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Main Grid
-col_left, col_right = st.columns([1, 2])
+col_left, col_right = st.columns([1, 1.6])
 
 with col_left:
-    st.markdown('<div class="input-panel">', unsafe_allow_html=True)
-    st.markdown('<div class="panel-title">// INPUT CONFIG</div>', unsafe_allow_html=True)
-    
-    # Audio Upload
-    st.markdown('<div class="upload-zone">', unsafe_allow_html=True)
-    st.markdown('<div class="upload-label">AUDIO SOURCE</div>', unsafe_allow_html=True)
-    audio_file = st.file_uploader("", type=['mp3', 'wav', 'm4a'], key="audio")
-    if audio_file:
-        st.markdown(f'<div style="color: #FF6B35; font-size: 0.75rem;">✓ {audio_file.name}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Logo Upload
-    st.markdown('<div class="upload-zone">', unsafe_allow_html=True)
-    st.markdown('<div class="upload-label">BRAND LOGO (OPTIONAL)</div>', unsafe_allow_html=True)
-    logo_file = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="logo")
-    if logo_file:
-        st.markdown(f'<div style="color: #FF6B35; font-size: 0.75rem;">✓ {logo_file.name}</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Caption Toggle
-    st.markdown('<div class="toggle-container">', unsafe_allow_html=True)
-    add_captions = st.checkbox("DYNAMIC WORD-LEVEL CAPTIONS", value=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Initiate Button
-    initiate = st.button("⚡ INITIATE PIPELINE", use_container_width=True, type="primary")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="panel-title">// INPUT CONFIG</div>', unsafe_allow_html=True)
+        
+        # Audio Upload
+        audio_file = st.file_uploader("", type=['mp3', 'wav', 'm4a'], key="audio", label_visibility="collapsed")
+        if audio_file:
+            st.markdown(f'<div style="color: #FF6B35; font-size: 0.75rem; text-align: center;">✓ {audio_file.name}</div>', unsafe_allow_html=True)
+        
+        # Caption Toggle
+        st.markdown("""
+        <div class="toggle-title">
+            <div class="label">DYNAMIC CAPTIONS</div>
+        </div>
+        <div style="color: rgba(255,255,255,0.52); font-size: 0.72rem; margin-bottom: 0.55rem; letter-spacing: 0.5px;">
+            Word-level highlight subtitles
+        </div>
+        """, unsafe_allow_html=True)
+        add_captions = st.checkbox("Dynamic word-level captions", value=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Logo Upload
+        logo_file = st.file_uploader("", type=['png', 'jpg', 'jpeg'], key="logo", label_visibility="collapsed")
+        if logo_file:
+            st.markdown(f'<div style="color: #FF6B35; font-size: 0.75rem; text-align: center;">✓ {logo_file.name}</div>', unsafe_allow_html=True)
+        
+        # Initiate Button
+        st.markdown('<div style="margin-top: 1.2rem;">', unsafe_allow_html=True)
+        initiate = st.button("⚡ INITIATE PIPELINE", use_container_width=True, type="primary")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
-    st.markdown('<div class="agent-console">', unsafe_allow_html=True)
-    st.markdown('<div class="panel-title">// AGENT CONSOLE</div>', unsafe_allow_html=True)
-    
-    # Agent Pipeline
-    st.markdown(f"""
-    <div class="agent-item">
-        <div class="agent-number">01</div>
-        <div class="agent-content">
-            <div class="agent-name">SCRIPT AGENT</div>
-            <div class="agent-desc">→ Transcribe audio via Groq Whisper<br/>→ Generate timestamped video map with AI</div>
-            <div class="agent-status">IDLE</div>
-        </div>
-    </div>
-    
-    <div class="agent-item">
-        <div class="agent-number">02</div>
-        <div class="agent-content">
-            <div class="agent-name">ASSET AGENT</div>
-            <div class="agent-desc">→ Extract visual keywords from segments<br/>→ Download portrait videos from Pexels API</div>
-            <div class="agent-status">IDLE</div>
-        </div>
-    </div>
-    
-    <div class="agent-item">
-        <div class="agent-number">03</div>
-        <div class="agent-content">
-            <div class="agent-name">ASSEMBLY AGENT</div>
-            <div class="agent-desc">→ Trim and sync video clips to timestamps<br/>→ Render 9:16 vertical format with FFmpeg</div>
-            <div class="agent-status">IDLE</div>
-        </div>
-    </div>
-    
-    <div class="agent-item">
-        <div class="agent-number">04</div>
-        <div class="agent-content">
-            <div class="agent-name">SUBTITLE AGENT</div>
-            <div class="agent-desc">→ Generate word-level caption timing<br/>→ Burn subtitles and logo overlay</div>
-            <div class="agent-status">IDLE</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="panel-title">// AGENT CONSOLE</div>', unsafe_allow_html=True)
+        
+        # Agent Pipeline
+        agent_container = st.container()
+        with agent_container:
+            st.markdown("""
+            <div class="agent-list">
+            <div class="agent-item">
+                <div class="agent-number">01</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">SCRIPT AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Transcribe audio via Groq Whisper<br/>→ Generate timestamped video map with AI</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">02</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">ASSET AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Extract visual keywords from segments<br/>→ Download portrait videos from Pexels API</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">03</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">ASSEMBLY AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Trim and sync video clips to timestamps<br/>→ Render 9:16 vertical format with FFmpeg</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">04</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">SUBTITLE AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Generate word-level caption timing<br/>→ Burn subtitles and logo overlay</div>
+                </div>
+            </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Final output placeholder (becomes AGENT 05 only after completion)
+        output_placeholder = st.empty()
 
-# System Log
-log_placeholder = st.empty()
-log_placeholder.markdown("""
-<div class="system-log">
-    <div class="log-title">// SYSTEM LOG</div>
-    <div class="log-content">// awaiting pipeline start...</div>
-</div>
-""", unsafe_allow_html=True)
+        # System Log (inside right panel, below agent list)
+        st.markdown('<div style="margin-top: 1.15rem;">', unsafe_allow_html=True)
+        log_placeholder = st.empty()
+        log_placeholder.markdown("""
+        <div class="system-log">
+            <div class="log-title terminal"><span class="term-dots"><span></span><span></span><span></span></span> SYSTEM LOG</div>
+            <div class="log-content">// awaiting pipeline start...</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
 # Process Pipeline
 if initiate:
@@ -583,36 +762,51 @@ if initiate:
             # Success
             log_placeholder.markdown("""
             <div class="system-log">
-                <div class="log-title">// SYSTEM LOG</div>
+                <div class="log-title terminal"><span class="term-dots"><span></span><span></span><span></span></span> SYSTEM LOG</div>
                 <div class="log-content" style="color: #FF6B35;">// ✓ PIPELINE COMPLETE</div>
             </div>
             """, unsafe_allow_html=True)
             
-            # Video info
+            # Show final output section
             video_duration = get_video_duration(final_output)
             
-            st.markdown(f"""
-            <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; padding: 1.5rem; margin-top: 2rem;">
-                <div style="color: #FF6B35; font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">✓ VIDEO GENERATED</div>
-                <div style="color: #888; font-size: 0.85rem;">
-                    Duration: {video_duration:.1f}s | Segments: {len(video_map)} | Resolution: 1080x1920
+            with output_placeholder.container():
+                st.markdown(f"""
+                <div class="agent-list">
+                    <div class="agent-item final-output">
+                        <div class="agent-number">05</div>
+                        <div class="agent-content">
+                            <div class="agent-header">
+                                <div class="agent-name">FINAL OUTPUT</div>
+                                <div class="agent-status">READY</div>
+                            </div>
+                            <div class="agent-desc">→ Rendered Video Output</div>
+                            <div class="final-output-body">
+                                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:0.75rem;">
+                                    <div style="color:#FF6B35; font-size:0.95rem; font-weight:700; letter-spacing:1px;">✓ VIDEO GENERATED</div>
+                                    <div style="color: rgba(255,255,255,0.5); font-size:0.72rem; letter-spacing:0.5px;">
+                                        {video_duration:.1f}s • {len(video_map)} segments • 1080×1920
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Download button
-            with open(final_output, 'rb') as f:
-                st.download_button(
-                    label="⬇ DOWNLOAD VIDEO",
-                    data=f,
-                    file_name=final_output,
-                    mime="video/mp4",
-                    use_container_width=True,
-                    type="primary"
-                )
-            
-            # Video preview
-            st.video(final_output)
+                """, unsafe_allow_html=True)
+                
+                # Download button
+                with open(final_output, 'rb') as f:
+                    st.download_button(
+                        label="⬇ DOWNLOAD VIDEO",
+                        data=f,
+                        file_name=final_output,
+                        mime="video/mp4",
+                        use_container_width=True,
+                        type="primary"
+                    )
+                
+                # Video preview
+                st.video(final_output)
             
             # Cleanup
             cleanup_temp_files()
@@ -622,7 +816,7 @@ if initiate:
         except Exception as e:
             log_placeholder.markdown(f"""
             <div class="system-log">
-                <div class="log-title">// SYSTEM LOG</div>
+                <div class="log-title terminal"><span class="term-dots"><span></span><span></span><span></span></span> SYSTEM LOG</div>
                 <div class="log-content" style="color: #FF0080;">// ERROR: {str(e)}</div>
             </div>
             """, unsafe_allow_html=True)
