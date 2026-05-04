@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import time
+import subprocess
 from pathlib import Path
 
 # Add src to path
@@ -18,12 +19,8 @@ from download_videos import (
 from assemble_video import (
     check_ffmpeg,
     create_temp_folder,
-    process_clip,
-    create_concat_file,
-    concatenate_videos,
-    add_audio,
-    cleanup_temp_files,
-    get_video_duration
+    get_video_duration,
+    cleanup_temp_files
 )
 from add_captions import (
     create_word_segments,
@@ -183,8 +180,7 @@ if st.button("🎬 Generate Video", type="primary", use_container_width=True):
             successful = 0
             
             for i, segment in enumerate(video_map, 1):
-                keyword = segment.get('visual_keyword', 'abstract')
-                if find_and_download_video(keyword, i):
+                if find_and_download_video(segment, i):
                     successful += 1
                 progress_bar.progress(30 + int((i / len(video_map)) * 30))
             
@@ -195,22 +191,63 @@ if st.button("🎬 Generate Video", type="primary", use_container_width=True):
             progress_bar.progress(65)
             
             create_temp_folder()
-            processed_clips = []
             
-            for i, segment in enumerate(video_map, 1):
+            # Check which clips exist
+            existing_clips = 0
+            for i in range(1, len(video_map) + 1):
                 clip_path = os.path.join('assets', f"clip_{i}.mp4")
                 if os.path.exists(clip_path):
-                    duration = segment['end_time'] - segment['start_time']
-                    output_path = os.path.join('temp', f"processed_{i}.mp4")
-                    if process_clip(clip_path, output_path, duration, i, len(video_map)):
-                        processed_clips.append(output_path)
+                    existing_clips += 1
             
-            concat_file = create_concat_file(processed_clips)
-            temp_video = os.path.join('temp', 'concatenated.mp4')
-            concatenate_videos(concat_file, temp_video)
+            st.info(f"Found {existing_clips}/{len(video_map)} clips. Missing clips will use black fallback.")
+            
+            # Prepare inputs and filter complex
+            inputs = []
+            filter_parts = []
+            
+            for i, segment in enumerate(video_map):
+                clip_path = os.path.join('assets', f"clip_{i+1}.mp4")
+                duration = segment['end_time'] - segment['start_time']
+                
+                # Check if clip exists, create fallback if not
+                if not os.path.exists(clip_path):
+                    clip_path = os.path.join('temp', f"fallback_{i+1}.mp4")
+                    cmd = [
+                        'ffmpeg', '-f', 'lavfi',
+                        '-i', f'color=c=black:s=1080x1920:d={duration}:r=30',
+                        '-c:v', 'libx264', '-preset', 'ultrafast', '-y', clip_path
+                    ]
+                    subprocess.run(cmd, capture_output=True)
+                
+                inputs.extend(['-i', clip_path])
+                
+                filter_parts.append(
+                    f"[{i}:v]trim=start=0:end={duration},setpts=PTS-STARTPTS,"
+                    f"fps=30,format=yuv420p,scale=1080:1920:force_original_aspect_ratio=increase,"
+                    f"crop=1080:1920,setsar=1[v{i}]"
+                )
+            
+            concat_inputs = ''.join([f"[v{i}]" for i in range(len(video_map))])
+            filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(video_map)}:v=1:a=0[outv]"
+            
+            audio_duration = get_video_duration(audio_path)
             
             draft_output = 'draft_video.mp4'
-            add_audio(temp_video, audio_path, draft_output)
+            cmd = [
+                'ffmpeg', *inputs, '-i', audio_path,
+                '-filter_complex', filter_complex,
+                '-map', '[outv]', '-map', f'{len(video_map)}:a',
+                '-t', str(audio_duration),
+                '-c:v', 'libx264', '-preset', 'medium', '-crf', '23',
+                '-c:a', 'aac', '-b:a', '192k', '-r', '30',
+                '-y', draft_output
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                st.error(f"Assembly failed: {result.stderr}")
+                raise Exception("Video assembly failed")
             
             progress_bar.progress(80)
             st.success("✓ Video assembled")

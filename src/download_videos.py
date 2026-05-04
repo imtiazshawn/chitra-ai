@@ -77,16 +77,21 @@ def download_video(url, filename):
     return False
 
 
-def find_and_download_video(keyword, clip_number, max_retries=3):
-    """Search and download video with retry logic."""
-    original_keyword = keyword
-    current_keyword = keyword
-    attempt = 0
+def find_and_download_video(segment, clip_number):
+    """Search and download video with multiple query attempts."""
+    # Get search queries and fallback
+    search_queries = segment.get('search_queries', [])
+    fallback_topic = segment.get('fallback_topic', 'abstract')
     
-    while attempt < max_retries:
-        print(f"  Searching Pexels for: '{current_keyword}'")
+    # Build complete search list
+    all_queries = search_queries + [fallback_topic]
+    
+    print(f"  Available queries: {all_queries}")
+    
+    for query in all_queries:
+        print(f"  Searching Pexels for: '{query}'")
         
-        videos = search_pexels_video(current_keyword)
+        videos = search_pexels_video(query)
         
         if videos:
             # Try to find a suitable video
@@ -97,26 +102,15 @@ def find_and_download_video(keyword, clip_number, max_retries=3):
                     print(f"  Found video! Downloading {filename}...")
                     
                     if download_video(video_url, filename):
-                        print(f"✓ Downloaded {filename}")
+                        print(f"✓ Downloaded {filename} using query: '{query}'")
                         return True
                     else:
                         print(f"  Failed to download, trying next video...")
         
-        # No suitable video found, simplify keyword
-        attempt += 1
-        if attempt < max_retries:
-            simplified = simplify_keyword(current_keyword)
-            if simplified:
-                print(f"  No results. Retrying with simpler keyword...")
-                current_keyword = simplified
-            else:
-                # Use generic fallback
-                current_keyword = 'abstract'
-                print(f"  No results. Trying generic keyword: '{current_keyword}'")
-        
+        print(f"  No results for '{query}', trying next query...")
         time.sleep(0.5)  # Rate limiting
     
-    print(f"✗ Could not find video for '{original_keyword}' after {max_retries} attempts")
+    print(f"✗ Could not find video after trying all queries")
     return False
 
 
@@ -144,11 +138,9 @@ def main():
     # Download videos for each segment
     successful = 0
     for i, segment in enumerate(video_map, 1):
-        keyword = segment.get('visual_keyword', 'abstract')
         print(f"\n[{i}/{len(video_map)}] Downloading clip {i}...")
-        print(f"  Keyword: {keyword}")
         
-        if find_and_download_video(keyword, i):
+        if find_and_download_video(segment, i):
             successful += 1
         
         time.sleep(1)  # Rate limiting between requests

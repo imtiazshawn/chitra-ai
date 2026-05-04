@@ -42,10 +42,12 @@ Create a JSON array where each segment is 5-10 seconds long. For each segment pr
 - start_time: float (seconds)
 - end_time: float (seconds)
 - transcript_text: string (the spoken words in this segment)
-- visual_keyword: string (1-3 words describing ideal stock footage, e.g., "city skyline", "person working", "nature landscape")
+- search_queries: array of 3 search query variations (e.g., ["business meeting", "office work", "professional workspace"])
+- fallback_topic: string (generic fallback like "abstract tech", "nature", "city life", "people")
 - caption_style: string (one of: "energetic", "calm", "professional", "dramatic", "playful")
 
-Choose caption_style based on the content tone. Choose visual_keyword based on what would visually represent the content.
+Choose search_queries based on what would visually represent the content with variations.
+Choose fallback_topic as a safe generic option if specific searches fail.
 
 Return ONLY valid JSON array, no markdown or explanation."""
 

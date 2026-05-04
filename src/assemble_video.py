@@ -36,91 +36,85 @@ def get_video_duration(video_path):
         video_path
     ]
     result = subprocess.run(cmd, capture_output=True, text=True)
-    return float(result.stdout.strip())
+    try:
+        return float(result.stdout.strip())
+    except:
+        return 0.0
 
 
-def process_clip(input_path, output_path, duration, clip_number, total_clips):
-    """Trim and resize clip to 1080x1920 (9:16 aspect ratio)."""
-    print(f"  [{clip_number}/{total_clips}] Processing {os.path.basename(input_path)}...")
-    
+def create_fallback_clip(duration, output_path):
+    """Create a black fallback clip with specified duration."""
     cmd = [
         'ffmpeg',
-        '-i', input_path,
-        '-t', str(duration),  # Trim to exact duration
-        '-vf', 'scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920',  # Resize and crop
+        '-f', 'lavfi',
+        '-i', f'color=c=black:s=1080x1920:d={duration}:r=30',
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',
+        '-y',
+        output_path
+    ]
+    subprocess.run(cmd, capture_output=True)
+
+
+def assemble_video_with_complex_filter(video_map, audio_path, output_path):
+    """Assemble video using FFmpeg complex filter for perfect sync."""
+    print("\nAssembling video with complex filter...")
+    
+    # Prepare inputs and filter complex
+    inputs = []
+    filter_parts = []
+    
+    for i, segment in enumerate(video_map):
+        clip_path = os.path.join(ASSETS_FOLDER, f"clip_{i+1}.mp4")
+        duration = segment['end_time'] - segment['start_time']
+        
+        # Check if clip exists, create fallback if not
+        if not os.path.exists(clip_path):
+            print(f"  Warning: {clip_path} not found, creating fallback...")
+            clip_path = os.path.join(TEMP_FOLDER, f"fallback_{i+1}.mp4")
+            create_fallback_clip(duration, clip_path)
+        
+        inputs.extend(['-i', clip_path])
+        
+        # Build filter for this clip with exact timing and consistent format
+        # Format: trim to exact duration, set fps, scale, crop, set SAR
+        filter_parts.append(
+            f"[{i}:v]trim=start=0:end={duration},setpts=PTS-STARTPTS,"
+            f"fps=30,format=yuv420p,scale=1080:1920:force_original_aspect_ratio=increase,"
+            f"crop=1080:1920,setsar=1[v{i}]"
+        )
+    
+    # Concatenate all processed clips
+    concat_inputs = ''.join([f"[v{i}]" for i in range(len(video_map))])
+    filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(video_map)}:v=1:a=0[outv]"
+    
+    # Get total expected duration from audio
+    audio_duration = get_video_duration(audio_path)
+    
+    # Build FFmpeg command
+    cmd = [
+        'ffmpeg',
+        *inputs,
+        '-i', audio_path,
+        '-filter_complex', filter_complex,
+        '-map', '[outv]',
+        '-map', f'{len(video_map)}:a',
+        '-t', str(audio_duration),  # Force exact audio duration
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '23',
-        '-an',  # Remove audio from clips
-        '-y',  # Overwrite output
-        output_path
-    ]
-    
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        print(f"  Warning: Error processing clip {clip_number}")
-        return False
-    
-    return True
-
-
-def create_concat_file(processed_clips):
-    """Create FFmpeg concat file."""
-    concat_file = os.path.join(TEMP_FOLDER, 'concat_list.txt')
-    
-    with open(concat_file, 'w') as f:
-        for clip in processed_clips:
-            # Use relative path and escape special characters
-            clip_path = clip.replace('\\', '/')
-            f.write(f"file '../{clip_path}'\n")
-    
-    return concat_file
-
-
-def concatenate_videos(concat_file, output_path):
-    """Concatenate all processed clips."""
-    print("\n  Concatenating all clips...")
-    
-    cmd = [
-        'ffmpeg',
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', concat_file,
-        '-c', 'copy',
-        '-y',
-        output_path
-    ]
-    
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    
-    if result.returncode != 0:
-        print(f"  Error concatenating videos: {result.stderr}")
-        return False
-    
-    return True
-
-
-def add_audio(video_path, audio_path, output_path):
-    """Add audio to video and ensure sync."""
-    print("\n  Adding audio track...")
-    
-    cmd = [
-        'ffmpeg',
-        '-i', video_path,
-        '-i', audio_path,
-        '-c:v', 'copy',
         '-c:a', 'aac',
         '-b:a', '192k',
-        '-shortest',  # Match shortest stream (ensures sync)
+        '-r', '30',  # Consistent frame rate
         '-y',
         output_path
     ]
     
+    print(f"  Processing {len(video_map)} clips with complex filter...")
     result = subprocess.run(cmd, capture_output=True, text=True)
     
     if result.returncode != 0:
-        print(f"  Error adding audio: {result.stderr}")
+        print(f"  Error: {result.stderr}")
         return False
     
     return True
@@ -130,8 +124,14 @@ def cleanup_temp_files():
     """Remove temporary files."""
     if os.path.exists(TEMP_FOLDER):
         for file in os.listdir(TEMP_FOLDER):
-            os.remove(os.path.join(TEMP_FOLDER, file))
-        os.rmdir(TEMP_FOLDER)
+            try:
+                os.remove(os.path.join(TEMP_FOLDER, file))
+            except:
+                pass
+        try:
+            os.rmdir(TEMP_FOLDER)
+        except:
+            pass
 
 
 def main():
@@ -160,47 +160,23 @@ def main():
     # Create temp folder
     create_temp_folder()
     
-    # Process each clip
-    print("Step 1: Processing clips (trim & resize to 1080x1920)...\n")
-    processed_clips = []
-    
-    for i, segment in enumerate(video_map, 1):
+    # Check which clips exist
+    existing_clips = 0
+    for i in range(1, len(video_map) + 1):
         clip_path = os.path.join(ASSETS_FOLDER, f"clip_{i}.mp4")
-        
-        if not os.path.exists(clip_path):
-            print(f"  Warning: {clip_path} not found, skipping...")
-            continue
-        
-        duration = segment['end_time'] - segment['start_time']
-        output_path = os.path.join(TEMP_FOLDER, f"processed_{i}.mp4")
-        
-        if process_clip(clip_path, output_path, duration, i, len(video_map)):
-            processed_clips.append(output_path)
+        if os.path.exists(clip_path):
+            existing_clips += 1
     
-    if not processed_clips:
-        print("\nError: No clips were processed successfully")
+    print(f"Found {existing_clips}/{len(video_map)} clips in assets folder")
+    if existing_clips < len(video_map):
+        print(f"Missing clips will be replaced with black fallback clips\n")
+    
+    # Assemble video with complex filter
+    print("Assembling video with perfect sync...")
+    
+    if not assemble_video_with_complex_filter(video_map, audio_file, OUTPUT_VIDEO):
+        print("Error: Failed to assemble video")
         return
-    
-    print(f"\n✓ Processed {len(processed_clips)}/{len(video_map)} clips")
-    
-    # Concatenate clips
-    print("\nStep 2: Concatenating clips...")
-    concat_file = create_concat_file(processed_clips)
-    temp_video = os.path.join(TEMP_FOLDER, 'concatenated.mp4')
-    
-    if not concatenate_videos(concat_file, temp_video):
-        print("Error: Failed to concatenate videos")
-        return
-    
-    print("✓ Clips concatenated")
-    
-    # Add audio
-    print("\nStep 3: Adding audio and syncing...")
-    if not add_audio(temp_video, audio_file, OUTPUT_VIDEO):
-        print("Error: Failed to add audio")
-        return
-    
-    print(f"✓ Audio added and synced")
     
     # Verify output
     if os.path.exists(OUTPUT_VIDEO):
@@ -214,7 +190,7 @@ def main():
         print(f"✓ Audio duration: {audio_duration:.2f}s")
         print(f"✓ Sync difference: {abs(video_duration - audio_duration):.2f}s")
         
-        if abs(video_duration - audio_duration) < 0.5:
+        if abs(video_duration - audio_duration) < 0.1:
             print("✓ Perfect sync!")
     
     # Cleanup
