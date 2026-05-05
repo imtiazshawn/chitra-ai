@@ -12,6 +12,11 @@ CYBERPUNK_CSS = """
         background: #0A0A0A;
     }
     
+    /* Remove top padding from main container */
+    .main .block-container {
+        padding-top: 2rem !important;
+    }
+    
     .neon-title {
         font-size: 2.5rem;
         font-weight: 700;
@@ -19,14 +24,15 @@ CYBERPUNK_CSS = """
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
-        margin-bottom: 0.5rem;
+        margin-bottom: 0;
+        line-height: 1.2;
     }
     
     .status-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
     }
     .status-bar .neon-title { margin: 0; line-height: 1.1; }
     
@@ -57,7 +63,7 @@ CYBERPUNK_CSS = """
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 0.75rem;
-        margin-bottom: 2.5rem;
+        margin-bottom: 1.5rem;
     }
     
     .status-card {
@@ -118,8 +124,17 @@ CYBERPUNK_CSS = """
         font-weight: 700;
     }
     
+    .upload-label {
+        color: #FF6B35;
+        font-size: 0.7rem;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+    }
+    
     div[data-testid="column"]:first-child [data-testid="stFileUploader"] {
-        margin-bottom: 1.25rem;
+        margin-bottom: 0;
     }
     div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] {
         border: 2px dashed rgba(255, 255, 255, 0.16) !important;
@@ -137,8 +152,8 @@ CYBERPUNK_CSS = """
     div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] > div {
         display: grid !important;
         place-items: center !important;
-        min-height: 148px;
-        padding: 22px 18px !important;
+        min-height: 120px;
+        padding: 18px 15px !important;
     }
     div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] small,
     div[data-testid="column"]:first-child [data-testid="stFileUploaderDropzone"] span,
@@ -147,28 +162,28 @@ CYBERPUNK_CSS = """
         display: none !important;
     }
     div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(1) [data-testid="stFileUploaderDropzone"]::before {
-        content: "↑\\A\\A AUDIO SOURCE\\A MP3 • WAV • M4A";
+        content: "↑\A\AMP3 • WAV • M4A";
         white-space: pre;
         text-align: center;
-        color: rgba(255, 255, 255, 0.88);
-        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.75rem;
         letter-spacing: 1px;
-        line-height: 1.35;
-        text-shadow: 0 0 12px rgba(255, 107, 53, 0.18);
+        line-height: 1.5;
+        text-shadow: 0 0 10px rgba(255, 107, 53, 0.15);
         display: block;
     }
     div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(1) [data-testid="stFileUploaderDropzone"] > div {
-        min-height: 172px;
+        min-height: 120px;
     }
     div[data-testid="column"]:first-child [data-testid="stFileUploader"]:nth-of-type(2) [data-testid="stFileUploaderDropzone"]::before {
-        content: "◇\\A\\A BRAND LOGO\\A OPTIONAL • PNG • JPG";
+        content: "◇\A\APNG • JPG";
         white-space: pre;
         text-align: center;
-        color: rgba(255, 255, 255, 0.82);
-        font-size: 0.78rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.75rem;
         letter-spacing: 1px;
-        line-height: 1.35;
-        text-shadow: 0 0 12px rgba(255, 107, 53, 0.14);
+        line-height: 1.5;
+        text-shadow: 0 0 10px rgba(255, 107, 53, 0.12);
     }
     
     .toggle-container {

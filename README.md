@@ -1,14 +1,26 @@
-# AI Video Agent
+# ChitraAI - Agentic Video Synthesis System
 
-A Python-based AI Video Agent that creates short-form videos (Reels/Shorts) from audio files.
+A Python-based AI Video Agent system with multiple pipelines for automated video creation.
 
-## Features
+## 🚀 Pipelines
 
+### Audio to Reels (Active - 40% Automation)
 - **Step 1**: Transcribe audio and generate video map with AI
 - **Step 2**: Download portrait videos from Pexels based on keywords
 - **Step 3**: Assemble final video with FFmpeg
 - **Step 4**: Add professional captions with word-level timing
-- **🎨 Web Interface**: Easy-to-use Streamlit frontend
+
+### Coming Soon
+- **Topic to Script** (20% Automation) - Research topics and generate scripts
+- **Topic to Speech** (60% Automation) - Convert topics to natural speech
+- **Topic to Reels** (100% Automation) - Full end-to-end automation
+
+## Features
+
+- **🎨 Landing Dashboard**: Select from multiple AI pipelines
+- **⚡ Modular Architecture**: Clean, maintainable codebase
+- **🎭 Cyberpunk UI**: Matte black with neon orange/red gradients
+- **🤖 Agent-Based**: Each step is handled by a specialized agent
 
 ## Setup
 
@@ -54,7 +66,13 @@ streamlit run app.py
 ```
 Then open your browser to the URL shown (usually http://localhost:8501)
 
-**Features:**
+**Dashboard Features:**
+- Select from multiple AI pipelines
+- View automation levels ("Lazy Level")
+- See pipeline status (Active/Developing)
+- Smooth navigation between pipelines
+
+**Audio to Reels Features:**
 - Upload audio file
 - Toggle captions on/off
 - Upload logo (optional)
@@ -95,12 +113,20 @@ This creates `final_output.mp4` with word-level captions and logo overlay.
 ```
 ChitraAI/
 ├── venv/                 # Virtual environment
-├── src/                  # Source code
+├── src/                  # Backend pipeline code
 │   ├── main.py          # Step 1: Transcription & mapping
 │   ├── download_videos.py # Step 2: Video download
 │   ├── assemble_video.py  # Step 3: Video assembly
 │   └── add_captions.py    # Step 4: Caption generation
-├── app.py               # 🎨 Streamlit Web Interface
+├── ui/                   # Frontend UI modules
+│   ├── __init__.py      # Module init
+│   ├── styles.py        # Base cyberpunk CSS
+│   ├── dashboard_styles.py # Dashboard-specific CSS
+│   ├── components.py    # Reusable UI components
+│   ├── dashboard.py     # Landing dashboard
+│   ├── audio_to_reels.py # Audio to Reels page
+│   └── pipeline.py      # Pipeline execution logic
+├── app.py               # 🎨 Main app with routing
 ├── assets/              # Downloaded video clips
 ├── temp/                # Temporary processed clips
 ├── video_map.json       # Generated video map
