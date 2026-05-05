@@ -23,8 +23,8 @@ PIPELINES = [
         "name": "Topic to Speech",
         "description": "Convert topics into natural-sounding speech with advanced TTS technology.",
         "lazy_level": 60,
-        "status": "locked",
-        "agents": 3
+        "status": "active",
+        "agents": 2
     },
     {
         "id": "full_automation",

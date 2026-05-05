@@ -1,6 +1,10 @@
 # AI API libraries
 groq>=0.13.0
 
+# TTS libraries
+elevenlabs>=1.0.0
+edge-tts>=6.1.0
+
 # Environment management
 python-dotenv==1.0.1
 

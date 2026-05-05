@@ -15,8 +15,13 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - **Step 2**: Convert script to audio (Manual TTS - Coming Soon)
 - **Step 3-6**: Use Audio to Reels pipeline
 
+### Topic to Speech (Active - 60% Automation)
+- **Step 1**: Generate high-retention script with [Director Cues] (Script Agent)
+- **Step 2**: Synthesize audio using ElevenLabs professional voices (Voice Agent)
+- **Step 3**: Use Audio to Reels pipeline
+
 ### Coming Soon
-- **Topic to Speech** (60% Automation) - Convert topics to natural speech
+- **Full Automation** (100% Automation) - Complete end-to-end: Topic → Script → Speech → Video
 
 ## Features
 
@@ -60,6 +65,7 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 6. Get API Keys:
    - **Groq**: https://console.groq.com/ (free)
    - **Pexels**: https://www.pexels.com/api/ (free)
+   - **ElevenLabs**: https://elevenlabs.io/ (10,000 chars/month free)
 
 ## Usage
 
@@ -94,6 +100,18 @@ Then open your browser to the URL shown (usually http://localhost:8501)
 - Manual TTS conversion (for now)
 - Use Audio to Reels for video generation
 
+**Topic to Speech Features:**
+- Enter topic/idea
+- Agentic workflow: Script Agent → Voice Agent
+- Generates script with [Director Cues]
+- Automatically synthesizes audio with ElevenLabs
+- Professional male voice (Adam - deep, authoritative)
+- Natural, expressive tone (Stability: 0.5, Similarity: 0.75)
+- Download script JSON, clean text, and audio MP3
+- Audio preview in browser
+- Free tier: 10,000 characters/month
+- Then use Audio to Reels for video
+
 ### Command Line (Advanced)
 
 #### Topic to Reels: Generate Script
@@ -109,6 +127,28 @@ This creates `generated_script.json` with:
 - Suggested video vibe
 
 Then convert script to audio using TTS service and proceed with Audio to Reels pipeline.
+
+#### Topic to Speech: Generate Script + Audio
+```bash
+python src/speech_agent.py
+```
+This creates:
+- `generated_script.json` - Full script with [Director Cues]
+- `clean_script.txt` - Clean script for reference
+- `audio.mp3` - Professional voiceover with ElevenLabs
+
+The Voice Agent automatically:
+- Uses ElevenLabs professional voice (Adam)
+- Removes [Director Cues] before synthesis
+- Natural, expressive tone (Stability: 0.5, Similarity: 0.75)
+- Deep, authoritative voice perfect for Senior Architect persona
+
+**ElevenLabs Setup:**
+1. Sign up at https://elevenlabs.io/
+2. Get your free API key (10,000 chars/month)
+3. Add to `.env` file as `ELEVENLABS_API_KEY`
+
+Then upload audio.mp3 to Audio to Reels pipeline.
 
 #### Step 1: Transcribe Audio & Generate Video Map
 ```bash
@@ -149,7 +189,8 @@ This creates `final_output.mp4` with:
 ChitraAI/
 ├── venv/                 # Virtual environment
 ├── src/                  # Backend pipeline code
-│   ├── script_agent.py  # NEW: Script generation from topic
+│   ├── script_agent.py  # Script generation from topic
+│   ├── speech_agent.py  # Topic to Speech pipeline
 │   ├── main.py          # Step 1: Transcription & mapping
 │   ├── download_videos.py # Step 2: Video download
 │   ├── assemble_video.py  # Step 3: Video assembly
@@ -161,12 +202,15 @@ ChitraAI/
 │   ├── components.py    # Reusable UI components
 │   ├── dashboard.py     # Landing dashboard
 │   ├── audio_to_reels.py # Audio to Reels page
-│   ├── topic_to_reels.py # NEW: Topic to Reels page
+│   ├── topic_to_reels.py # Topic to Reels page
+│   ├── topic_to_speech.py # Topic to Speech page
 │   └── pipeline.py      # Pipeline execution logic
 ├── app.py               # 🎨 Main app with routing
 ├── assets/              # Downloaded video clips
 ├── temp/                # Temporary processed clips
-├── generated_script.json # NEW: Generated script output
+├── generated_script.json # Generated script output
+├── clean_script.txt     # Clean script for TTS
+├── audio.mp3            # Generated audio
 ├── video_map.json       # Generated video map
 ├── draft_video.mp4      # Assembled video
 ├── final_output.mp4     # Final video with captions
