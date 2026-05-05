@@ -28,9 +28,13 @@ GLOBAL_THEME_PALETTE = {
         'color': '&H00FF00FF',  # Magenta
         'font': 'Komika Axis'
     },
-    'tech': {
-        'color': '&H000067FF',  # Neon Orange (#FF6700)
-        'font': 'The Bold Font'
+    'aggressive': {
+        'color': '&H0000D4FF',  # Electric Orange
+        'font': 'Montserrat ExtraBold'
+    },
+    'modern': {
+        'color': '&H00FFAA00',  # Electric Blue
+        'font': 'Inter Black'
     }
 }
 

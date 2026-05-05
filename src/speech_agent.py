@@ -14,21 +14,21 @@ load_dotenv()
 client = ElevenLabs(api_key=os.getenv('ELEVENLABS_API_KEY'))
 
 # V2 Model compatible voice IDs (Free Tier)
-VOICE_ID = "pNInz6obpgDQGcFmaJgB"  # Adam - Deep, authoritative male voice
-BACKUP_VOICE_ID = "CwhRBWXzGAHq8TQ4Fs17"  # Roger - Professional male voice
+VOICE_ID = "bIHbv24MWmeRgasZH58o"  # Will
+BACKUP_VOICE_ID = "pNInz6obpgDQGcFmaJgB"  # Adam - Deep, authoritative male voice
 
 # Edge-TTS backup voice (high-quality, always free)
 EDGE_TTS_VOICE = "en-US-ChristopherNeural"  # Deep, authoritative male
 
 
 def clean_script_for_tts(formatted_script):
-    """Clean script by removing [Director Cues] using Regex.
+    """Clean script by removing [Director Cues] and ALL pause-causing punctuation.
     
     Args:
         formatted_script: List of script lines with [Director Cues]
         
     Returns:
-        Cleaned script text ready for ElevenLabs
+        Cleaned script text ready for fast-paced TTS (ElevenLabs/Edge-TTS)
     """
     cleaned_lines = []
     
@@ -42,9 +42,13 @@ def clean_script_for_tts(formatted_script):
         cleaned_line = cleaned_line.strip()
         
         if cleaned_line:
+            # Remove ALL pause-causing punctuation: periods, commas, semicolons, colons
+            # Keep only apostrophes and hyphens for word integrity
+            cleaned_line = re.sub(r'[.,;:!?]', '', cleaned_line)
             cleaned_lines.append(cleaned_line)
     
-    # Join with spaces for natural flow
+    # Join with single space for continuous fast flow
+    # No commas, no periods between sentences = minimal pauses
     clean_text = ' '.join(cleaned_lines)
     
     return clean_text
@@ -76,19 +80,19 @@ def generate_speech_elevenlabs(text, output_path="audio.mp3", voice_id=VOICE_ID)
         output_path: Path to save the audio file
         voice_id: ElevenLabs voice ID to use
     """
-    print(f"  Using ElevenLabs V2 (Voice: Adam - Professional Male)")
+    print(f"  Using ElevenLabs V2 (Voice: Will)")
     print(f"  Model: eleven_turbo_v2_5 (Free Tier)")
-    print(f"  Settings: Stability=0.5, Similarity=0.75")
+    print(f"  Settings: Stability=0.4, Similarity=0.75, Style=0.6")
     
-    # Generate audio using V2 model
+    # Generate audio using V2 model with aggressive settings
     audio = client.text_to_speech.convert(
         text=text,
         voice_id=voice_id,
         model_id="eleven_turbo_v2_5",  # V2 model for Free Tier
         voice_settings=VoiceSettings(
-            stability=0.5,
-            similarity_boost=0.75,
-            style=0.0,
+            stability=0.4,          # More variation for energy
+            similarity_boost=0.75,  # Maintain voice identity
+            style=0.6,              # Aggressive style exaggeration
             use_speaker_boost=True
         )
     )
@@ -125,6 +129,10 @@ def generate_speech_from_script(script_data, output_path="audio.mp3"):
     # Clean script (remove [Director Cues] with Regex)
     clean_text = clean_script_for_tts(formatted_script)
     
+    # Debug: Show what was cleaned
+    print(f"  Original lines: {len(formatted_script)}")
+    print(f"  Cleaned preview: {clean_text[:150]}...")
+    
     print(f"  Clean text: {len(clean_text)} characters")
     print(f"  Preview: {clean_text[:100]}...")
     
@@ -146,9 +154,14 @@ def generate_speech_from_script(script_data, output_path="audio.mp3"):
             return output_path
             
         except Exception as e:
+            import traceback
             error_msg = str(e)
-            print(f"⚠ ElevenLabs failed: {error_msg[:100]}...")
-            print(f"⚡ Switching to Backup High-Quality Voice (Edge-TTS)")
+            print(f"\n⚠ ElevenLabs Error Details:")
+            print(f"  Error Type: {type(e).__name__}")
+            print(f"  Error Message: {error_msg}")
+            print(f"  Full Traceback:")
+            traceback.print_exc()
+            print(f"\n⚡ Switching to Backup High-Quality Voice (Edge-TTS)")
     else:
         print(f"⚠ ElevenLabs API key not configured")
         print(f"⚡ Using Backup High-Quality Voice (Edge-TTS)")
