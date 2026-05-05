@@ -47,6 +47,15 @@ def render_topic_to_reels():
                 label_visibility="collapsed"
             )
             
+            # Reading Instructions Checkbox
+            st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
+            add_instructions = st.checkbox(
+                "Add reading instructions on script",
+                value=False,
+                help="Include [Director Cues] for tone, pacing, and silences"
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
+            
             # Script Style
             st.markdown('<div class="upload-label" style="margin-top: 1.5rem;">SCRIPT STYLE</div>', unsafe_allow_html=True)
             script_style = st.selectbox(
@@ -84,7 +93,7 @@ def render_topic_to_reels():
                 # Generate script
                 log_placeholder.markdown(render_log("// [SCRIPT AGENT] Generating high-retention script..."), unsafe_allow_html=True)
                 
-                script_data = generate_script(topic)
+                script_data = generate_script(topic, add_instructions)
                 save_script(script_data)
                 
                 log_placeholder.markdown(render_log("// [SCRIPT AGENT] ✓ Script generated successfully"), unsafe_allow_html=True)
@@ -94,15 +103,21 @@ def render_topic_to_reels():
                     st.markdown(f"""
                     <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                         <div style="color: #FF6B35; font-weight: bold; margin-bottom: 0.5rem;">VIBE: {script_data.get('video_vibe', 'professional').upper()}</div>
-                        <div style="color: #888; font-size: 0.85rem;">Duration: ~{script_data.get('estimated_duration', 45)}s</div>
+                        <div style="color: #888; font-size: 0.85rem;">Duration: ~{script_data.get('estimated_duration', 45)}s | Lines: {len(script_data.get('formatted_script', []))}</div>
+                        {f'<div style="color: #00FF88; font-size: 0.85rem; margin-top: 0.25rem;">✓ Reading instructions included</div>' if add_instructions else ''}
                     </div>
                     """, unsafe_allow_html=True)
                     
                     st.markdown('<div class="upload-label">THE HOOK (0-5s)</div>', unsafe_allow_html=True)
                     st.markdown(f'<div style="color: #FFF; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 1rem;">{script_data.get("hook", "N/A")}</div>', unsafe_allow_html=True)
                     
-                    st.markdown('<div class="upload-label">FULL SCRIPT</div>', unsafe_allow_html=True)
-                    st.text_area("", value=script_data.get('raw_script', 'N/A'), height=200, label_visibility="collapsed")
+                    st.markdown('<div class="upload-label">FORMATTED SCRIPT</div>', unsafe_allow_html=True)
+                    
+                    # Display formatted script with proper line breaks
+                    formatted_lines = script_data.get('formatted_script', [])
+                    script_display = "\n".join(formatted_lines)
+                    
+                    st.text_area("", value=script_display, height=300, label_visibility="collapsed")
                     
                     st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
                     st.download_button(

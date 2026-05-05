@@ -87,6 +87,9 @@ Then open your browser to the URL shown (usually http://localhost:8501)
 - Enter topic/idea
 - AI generates high-retention script (40-50s)
 - Senior Architect writing style
+- Optional reading instructions with [Director Cues]
+- Punchy, segmented format (5-7 words per line)
+- Optional reading instructions (max 4-5 cues per script)
 - Download script JSON
 - Manual TTS conversion (for now)
 - Use Audio to Reels for video generation
@@ -101,6 +104,8 @@ This creates `generated_script.json` with:
 - High-retention 40-50s script
 - Hook, tension, solution, CTA structure
 - Senior Architect writing style
+- Punchy segments (5-12 words per line)
+- Optional [Director Cues] for tone, pacing, silences (max 4-5 per script)
 - Suggested video vibe
 
 Then convert script to audio using TTS service and proceed with Audio to Reels pipeline.
