@@ -1,7 +1,58 @@
 import os
 import json
 import subprocess
-import re
+from collections import Counter
+
+# ============================================================================
+# GLOBAL THEME PALETTE - Professional Reels Standard
+# ============================================================================
+
+GLOBAL_THEME_PALETTE = {
+    'energetic': {
+        'color': '&H0000FFFF',  # Bright Yellow (BGR format)
+        'font': 'Montserrat ExtraBold'
+    },
+    'calm': {
+        'color': '&H00FFB6C1',  # Soft Blue
+        'font': 'Inter'
+    },
+    'professional': {
+        'color': '&H0000D4FF',  # Orange
+        'font': 'Inter Black'
+    },
+    'dramatic': {
+        'color': '&H000000FF',  # Red
+        'font': 'Montserrat ExtraBold'
+    },
+    'playful': {
+        'color': '&H00FF00FF',  # Magenta
+        'font': 'Komika Axis'
+    },
+    'tech': {
+        'color': '&H000067FF',  # Neon Orange (#FF6700)
+        'font': 'The Bold Font'
+    }
+}
+
+# Fallback fonts in order of preference
+FONT_FALLBACK_LIST = [
+    'Montserrat ExtraBold',
+    'Inter Black',
+    'The Bold Font',
+    'Komika Axis',
+    'Arial Black',
+    'Impact'
+]
+
+# Professional Reels Standards
+BASE_FONT_SIZE = 56  # Eye-catching size for mobile (increased from 32)
+OUTLINE_WIDTH = 3.0  # 3px black outline for visibility
+SHADOW_DEPTH = 1.5   # Subtle drop shadow
+SAFE_ZONE_MARGIN = 165  # Vertical margin (safe zone above UI)
+PASSIVE_WORD_OPACITY = 217  # 85% opacity for passive words (255 * 0.85)
+ACTIVE_SCALE_BOOST = 115  # 15% size increase for active word
+
+# ============================================================================
 
 
 def format_time_ass(seconds):
@@ -13,17 +64,22 @@ def format_time_ass(seconds):
     return f"{hours}:{minutes:02d}:{secs:02d}.{centiseconds:02d}"
 
 
-def get_highlight_color(caption_style):
-    """Get highlight color based on caption style."""
-    color_map = {
-        'energetic': '&H00FFFF00',  # Bright Yellow
-        'calm': '&H00FFB6C1',       # Light Pink
-        'professional': '&H0000D4FF', # Cyan
-        'dramatic': '&H000000FF',   # Red
-        'playful': '&H00FF00FF',    # Magenta
-        'tech': '&H0000FF00'        # Neon Green
-    }
-    return color_map.get(caption_style, '&H0000FFFF')  # Default: Yellow
+def detect_video_vibe(video_map):
+    """Detect the dominant vibe from video_map caption styles."""
+    styles = [seg.get('caption_style', 'professional') for seg in video_map]
+    if not styles:
+        return 'professional'
+    
+    # Get most common style
+    style_counts = Counter(styles)
+    dominant_style = style_counts.most_common(1)[0][0]
+    return dominant_style
+
+
+def get_global_theme(video_vibe):
+    """Get global theme (color + font) for entire video based on vibe."""
+    theme = GLOBAL_THEME_PALETTE.get(video_vibe, GLOBAL_THEME_PALETTE['professional'])
+    return theme['color'], theme['font']
 
 
 def split_into_word_chunks(text, max_words=3):
@@ -75,13 +131,25 @@ def create_word_segments(video_map):
     return word_segments
 
 
-def create_dynamic_highlight_subtitles(word_segments, output_file='captions.ass'):
-    """Create ASS subtitle with dynamic word-level highlighting."""
-    print("Creating dynamic highlight subtitle file...")
+def create_dynamic_highlight_subtitles(word_segments, video_map, output_file='captions.ass'):
+    """Create professional ASS subtitle with global theme and dynamic word-level highlighting."""
+    print("Creating professional dynamic subtitle file...")
     
-    # ASS file header with larger base font size (increased by 15%)
-    ass_content = """[Script Info]
-Title: AI Video Captions - Dynamic Highlight
+    # Detect video vibe and get global theme
+    video_vibe = detect_video_vibe(video_map)
+    primary_highlight_color, global_font = get_global_theme(video_vibe)
+    
+    print(f"  Video Vibe: {video_vibe}")
+    print(f"  Global Font: {global_font}")
+    print(f"  Highlight Color: {primary_highlight_color}")
+    
+    # Convert passive opacity to ASS alpha format (inverted: 255 = transparent, 0 = opaque)
+    passive_alpha = 255 - PASSIVE_WORD_OPACITY
+    passive_color = f"&H{passive_alpha:02X}FFFFFF"  # White with 85% opacity
+    
+    # ASS file header with professional standards
+    ass_content = f"""[Script Info]
+Title: ChitraAI Professional Captions
 ScriptType: v4.00+
 WrapStyle: 0
 PlayResX: 1080
@@ -90,7 +158,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Inter,32,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,2.5,1,2,50,50,180,1
+Style: Default,{global_font},{BASE_FONT_SIZE},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,{OUTLINE_WIDTH},{SHADOW_DEPTH},2,50,50,{SAFE_ZONE_MARGIN},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -104,8 +172,6 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         duration = end - start
         word_duration = duration / len(words)
         
-        highlight_color = get_highlight_color(segment['style'])
-        
         # Create individual subtitle for each word timing
         for word_idx, word in enumerate(words):
             word_start = start + (word_idx * word_duration)
@@ -115,13 +181,18 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             formatted_words = []
             for i, w in enumerate(words):
                 if i == word_idx:
-                    # Active word: larger size (120%) and highlight color with pop effect
+                    # ACTIVE WORD: Pop effect with global highlight color
+                    # Scale from 100% -> 115% -> 115% with smooth transition
                     formatted_words.append(
-                        f"{{\\fscx120\\fscy120\\c{highlight_color}\\t(0,100,\\fscx125\\fscy125)\\t(100,200,\\fscx120\\fscy120)}}{w.upper()}{{\\r}}"
+                        f"{{\\c{primary_highlight_color}\\fscx100\\fscy100"
+                        f"\\t(0,150,\\fscx{ACTIVE_SCALE_BOOST}\\fscy{ACTIVE_SCALE_BOOST})}}"
+                        f"{w.upper()}{{\\r}}"
                     )
                 else:
-                    # Inactive words: normal size and white
-                    formatted_words.append(w.upper())
+                    # PASSIVE WORDS: White with 85% opacity, consistent styling
+                    formatted_words.append(
+                        f"{{\\c{passive_color}}}{w.upper()}{{\\r}}"
+                    )
             
             text = ' '.join(formatted_words)
             
@@ -134,7 +205,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(ass_content)
     
-    print(f"✓ Dynamic highlight subtitle file created: {output_file}")
+    print(f"✓ Professional subtitle file created: {output_file}")
+    print(f"  Font Size: {BASE_FONT_SIZE}px (Mobile-optimized)")
+    print(f"  Outline: {OUTLINE_WIDTH}px black")
+    print(f"  Shadow: {SHADOW_DEPTH}px depth")
+    print(f"  Safe Zone: {SAFE_ZONE_MARGIN}px margin")
     return output_file
 
 
@@ -220,9 +295,9 @@ def main():
     word_segments = create_word_segments(video_map)
     print(f"✓ Created {len(word_segments)} word segments (max 3 words each)\n")
     
-    # Create dynamic highlight subtitle file
-    print("Step 2: Generating dynamic highlight subtitle file...")
-    subtitle_file = create_dynamic_highlight_subtitles(word_segments)
+    # Create professional dynamic highlight subtitle file
+    print("Step 2: Generating professional subtitle file with global theme...")
+    subtitle_file = create_dynamic_highlight_subtitles(word_segments, video_map)
     print()
     
     # Check for logo

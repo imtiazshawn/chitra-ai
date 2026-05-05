@@ -91,7 +91,7 @@ def run_pipeline(audio_file, logo_file, add_captions, log_placeholder, output_pl
             """, unsafe_allow_html=True)
             
             word_segments = create_word_segments(video_map)
-            subtitle_file = create_dynamic_highlight_subtitles(word_segments)
+            subtitle_file = create_dynamic_highlight_subtitles(word_segments, video_map)
             
             final_output = 'final_output.mp4'
             logo_for_caption = logo_path if logo_path and os.path.exists(logo_path) else 'logo.png'

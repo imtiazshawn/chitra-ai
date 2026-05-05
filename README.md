@@ -8,7 +8,7 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - **Step 1**: Transcribe audio and generate video map with AI
 - **Step 2**: Download portrait videos from Pexels based on keywords
 - **Step 3**: Assemble final video with FFmpeg
-- **Step 4**: Add professional captions with word-level timing
+- **Step 4**: Add professional captions with word-level timing and global theme consistency
 
 ### Coming Soon
 - **Topic to Script** (20% Automation) - Research topics and generate scripts
@@ -104,7 +104,14 @@ This creates `draft_video.mp4` with trimmed clips, 9:16 aspect ratio, and synced
 ```bash
 python src/add_captions.py
 ```
-This creates `final_output.mp4` with word-level captions and logo overlay.
+This creates `final_output.mp4` with:
+- **56px mobile-optimized font** (75% larger than before)
+- **Global theme consistency** (one color + font per video)
+- **Word-level dynamic highlighting** with smooth pop animations
+- **3px black outline + 1.5px shadow** for perfect visibility
+- **85% opacity passive words** for clear focus
+- **Vibe-based font selection** (Tech, Energetic, Professional, etc.)
+- **165px safe zone margin** to avoid Reels UI overlap
 
 **Optional**: Place `logo.png` in the project root for branding overlay.
 
