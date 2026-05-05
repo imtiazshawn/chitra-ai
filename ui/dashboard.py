@@ -11,9 +11,9 @@ PIPELINES = [
         "agents": 4
     },
     {
-        "id": "topic_to_reels",
-        "name": "Topic to Reels",
-        "description": "Generate high-retention scripts from topics, then create professional reels with AI agents.",
+        "id": "topic_to_script",
+        "name": "Topic to Script",
+        "description": "Generate high-retention scripts from topics with AI. Perfect for content planning and preparation.",
         "lazy_level": 20,
         "status": "active",
         "agents": 1
@@ -21,10 +21,18 @@ PIPELINES = [
     {
         "id": "topic_to_speech",
         "name": "Topic to Speech",
-        "description": "Convert topics into natural-sounding speech with advanced TTS technology.",
+        "description": "Generate script and synthesize professional voiceover. Perfect for creating audio content.",
         "lazy_level": 60,
         "status": "active",
         "agents": 2
+    },
+    {
+        "id": "topic_to_reels",
+        "name": "Topic to Reels",
+        "description": "Complete automation: Topic → Script → Speech → Video. AI handles everything from idea to final reel.",
+        "lazy_level": 80,
+        "status": "active",
+        "agents": 6
     },
     {
         "id": "full_automation",

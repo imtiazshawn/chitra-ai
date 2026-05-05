@@ -114,6 +114,26 @@ def find_and_download_video(segment, clip_number):
     return False
 
 
+def download_videos_for_map(video_map):
+    """Download videos for all segments in video map.
+    
+    Args:
+        video_map: List of video segments with search queries
+        
+    Returns:
+        Number of successfully downloaded videos
+    """
+    create_assets_folder()
+    
+    successful = 0
+    for i, segment in enumerate(video_map, 1):
+        if find_and_download_video(segment, i):
+            successful += 1
+        time.sleep(1)  # Rate limiting
+    
+    return successful
+
+
 def main():
     print("=== Pexels Video Downloader ===\n")
     

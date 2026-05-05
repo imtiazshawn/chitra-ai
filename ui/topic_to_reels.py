@@ -1,35 +1,50 @@
-"""Topic to Reels pipeline page"""
+"""Topic to Reels - Full 80% Automation Pipeline"""
 import streamlit as st
 import os
+import sys
 
-from ui.components import render_header, render_status_cards, render_log
-from script_agent import generate_script, save_script
+# Add src to path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from ui.components import render_log
 
 def render_topic_to_reels():
-    """Render the Topic to Reels pipeline page"""
+    """Render the Topic to Reels full automation pipeline"""
     
     # Check API keys
     groq_key = os.getenv('GROQ_API_KEY')
+    elevenlabs_key = os.getenv('ELEVENLABS_API_KEY')
+    pexels_key = os.getenv('PEXELS_API_KEY')
+    
     groq_status = groq_key and groq_key != 'your_groq_api_key_here'
+    elevenlabs_status = elevenlabs_key and elevenlabs_key != 'your_elevenlabs_api_key_here'
+    pexels_status = pexels_key and pexels_key != 'your_pexels_api_key_here'
 
     # Header
     st.markdown("""
     <div class="page-header">
         <div class="page-title">TOPIC TO REELS</div>
-        <div class="page-subtitle">AI Script Generation → Video Synthesis</div>
+        <div class="page-subtitle">80% Automation: Topic → Script → Speech → Video</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Status Card
+    # Status Cards
     with st.container(border=True):
         st.markdown('<div class="panel-title">// SYSTEM STATUS</div>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             status_icon = "✓" if groq_status else "✗"
             status_color = "#00FF88" if groq_status else "#FF0080"
-            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} GROQ API</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} GROQ (Script)</div>', unsafe_allow_html=True)
         with col2:
-            st.markdown('<div style="color: #FFB800; font-size: 0.9rem;">⚠ TTS: Manual (Coming Soon)</div>', unsafe_allow_html=True)
+            if elevenlabs_status:
+                st.markdown(f'<div style="color: #00FF88; font-size: 0.9rem;">✓ ELEVENLABS (Voice)</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="color: #FFA500; font-size: 0.9rem;">⚡ EDGE-TTS (Backup)</div>', unsafe_allow_html=True)
+        with col3:
+            status_icon = "✓" if pexels_status else "✗"
+            status_color = "#00FF88" if pexels_status else "#FF0080"
+            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} PEXELS (Video)</div>', unsafe_allow_html=True)
 
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
@@ -42,36 +57,46 @@ def render_topic_to_reels():
             st.markdown('<div class="upload-label">TOPIC / IDEA</div>', unsafe_allow_html=True)
             topic = st.text_area(
                 "",
-                placeholder="e.g., Why microservices fail in startups",
-                height=100,
+                placeholder="e.g., Why most startups fail in first year",
+                height=120,
                 label_visibility="collapsed"
             )
             
-            # Reading Instructions Checkbox
+            # Captions Toggle
             st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-            add_instructions = st.checkbox(
-                "Add reading instructions on script",
-                value=False,
-                help="Include [Director Cues] for tone, pacing, and silences"
+            add_captions = st.checkbox(
+                "Add dynamic captions",
+                value=True,
+                help="Professional word-level highlighting captions"
             )
             st.markdown('</div>', unsafe_allow_html=True)
             
-            # Script Style
-            st.markdown('<div class="upload-label" style="margin-top: 1.5rem;">SCRIPT STYLE</div>', unsafe_allow_html=True)
-            script_style = st.selectbox(
-                "",
-                ["Senior Architect (Default)", "Energetic Educator", "Dramatic Storyteller"],
-                label_visibility="collapsed"
-            )
+            # Info box
+            st.markdown("""
+            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 6px;">
+                <div style="color: #00FF88; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.25rem;">⚡ 6 AI AGENTS</div>
+                <div style="color: #CCC; font-size: 0.75rem;">
+                    1. Script Agent → High-retention script<br>
+                    2. Voice Agent → Professional voiceover<br>
+                    3. Intelligence Agent → Video mapping<br>
+                    4. Download Agent → Visual assets<br>
+                    5. Assembly Agent → Video compilation<br>
+                    6. Subtitle Agent → Dynamic captions
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
             
             # Generate Button
             st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
-            generate_btn = st.button("⚡ GENERATE SCRIPT", use_container_width=True, type="primary")
+            generate_btn = st.button("⚡ GENERATE REEL", use_container_width=True, type="primary")
             st.markdown('</div>', unsafe_allow_html=True)
 
     with col_right:
         with st.container(border=True):
-            st.markdown('<div class="panel-title">// SCRIPT OUTPUT</div>', unsafe_allow_html=True)
+            st.markdown('<div class="panel-title">// AGENT CONSOLE</div>', unsafe_allow_html=True)
+            
+            # Agent status placeholder
+            agent_status = st.empty()
             
             # Output placeholder
             output_placeholder = st.empty()
@@ -82,63 +107,155 @@ def render_topic_to_reels():
             log_placeholder.markdown(render_log("// awaiting topic input..."), unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-    # Process Script Generation
+    # Process Full Pipeline
     if generate_btn:
         if not topic:
             log_placeholder.markdown(render_log("// ERROR: Topic cannot be empty", is_error=True), unsafe_allow_html=True)
         elif not groq_status:
             log_placeholder.markdown(render_log("// ERROR: GROQ_API_KEY not configured", is_error=True), unsafe_allow_html=True)
+        elif not pexels_status:
+            log_placeholder.markdown(render_log("// ERROR: PEXELS_API_KEY not configured", is_error=True), unsafe_allow_html=True)
         else:
             try:
-                # Generate script
-                log_placeholder.markdown(render_log("// [SCRIPT AGENT] Generating high-retention script..."), unsafe_allow_html=True)
+                from script_agent import generate_script, save_script
+                from speech_agent import generate_speech_from_script
+                from main import transcribe_audio, create_video_map, save_video_map
+                from download_videos import download_videos_for_map
+                from assemble_video import assemble_video_with_complex_filter
+                from add_captions import create_word_segments, create_dynamic_highlight_subtitles, burn_subtitles_and_logo
+                import json
                 
-                script_data = generate_script(topic, add_instructions)
+                # Step 1: Script Generation
+                agent_status.markdown("""
+                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #FF6B35; font-weight: bold;">🤖 AGENT 1/6: Script Agent</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Generating high-retention script...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// [1/6] Script Agent: Generating..."), unsafe_allow_html=True)
+                script_data = generate_script(topic, add_reading_instructions=True)
                 save_script(script_data)
                 
-                log_placeholder.markdown(render_log("// [SCRIPT AGENT] ✓ Script generated successfully"), unsafe_allow_html=True)
+                # Step 2: Voice Synthesis
+                agent_status.markdown("""
+                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1/6: Complete</div>
+                    <div style="color: #FF6B35; font-weight: bold; margin-top: 0.5rem;">🎙️ AGENT 2/6: Voice Agent</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Synthesizing professional voiceover...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// [2/6] Voice Agent: Synthesizing..."), unsafe_allow_html=True)
+                audio_path = generate_speech_from_script(script_data, "audio.mp3")
+                
+                # Step 3: Intelligence Agent (Transcription + Video Mapping)
+                agent_status.markdown("""
+                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1-2/6: Complete</div>
+                    <div style="color: #FF6B35; font-weight: bold; margin-top: 0.5rem;">🧠 AGENT 3/6: Intelligence Agent</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Analyzing audio and mapping visuals...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// [3/6] Intelligence Agent: Mapping..."), unsafe_allow_html=True)
+                transcript = transcribe_audio(audio_path)
+                video_map = create_video_map(transcript)
+                save_video_map(video_map)
+                
+                # Step 4: Download Agent
+                agent_status.markdown("""
+                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1-3/6: Complete</div>
+                    <div style="color: #FF6B35; font-weight: bold; margin-top: 0.5rem;">📥 AGENT 4/6: Download Agent</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Fetching visual assets from Pexels...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// [4/6] Download Agent: Fetching..."), unsafe_allow_html=True)
+                download_videos_for_map(video_map)
+                
+                # Step 5: Assembly Agent
+                agent_status.markdown("""
+                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1-4/6: Complete</div>
+                    <div style="color: #FF6B35; font-weight: bold; margin-top: 0.5rem;">🎬 AGENT 5/6: Assembly Agent</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Compiling video with perfect sync...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// [5/6] Assembly Agent: Compiling..."), unsafe_allow_html=True)
+                assemble_video_with_complex_filter(video_map, audio_path, "draft_video.mp4")
+                
+                # Step 6: Subtitle Agent (if enabled)
+                if add_captions:
+                    agent_status.markdown("""
+                    <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1-5/6: Complete</div>
+                        <div style="color: #FF6B35; font-weight: bold; margin-top: 0.5rem;">📝 AGENT 6/6: Subtitle Agent</div>
+                        <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Adding dynamic captions...</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    log_placeholder.markdown(render_log("// [6/6] Subtitle Agent: Processing..."), unsafe_allow_html=True)
+                    word_segments = create_word_segments(video_map)
+                    subtitle_file = create_dynamic_highlight_subtitles(word_segments, video_map)
+                    burn_subtitles_and_logo("draft_video.mp4", subtitle_file, "logo.png", "final_output.mp4")
+                    final_video = "final_output.mp4"
+                else:
+                    final_video = "draft_video.mp4"
+                
+                # Final Status
+                agent_status.markdown("""
+                <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00FF88; font-weight: bold;">✓ ALL AGENTS COMPLETE</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Your reel is ready!</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// ✓ PIPELINE COMPLETE"), unsafe_allow_html=True)
                 
                 # Display output
                 with output_placeholder.container():
                     st.markdown(f"""
                     <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
-                        <div style="color: #FF6B35; font-weight: bold; margin-bottom: 0.5rem;">VIBE: {script_data.get('video_vibe', 'professional').upper()}</div>
-                        <div style="color: #888; font-size: 0.85rem;">Duration: ~{script_data.get('estimated_duration', 45)}s | Lines: {len(script_data.get('formatted_script', []))}</div>
-                        {f'<div style="color: #00FF88; font-size: 0.85rem; margin-top: 0.25rem;">✓ Reading instructions included</div>' if add_instructions else ''}
+                        <div style="color: #FF6B35; font-weight: bold; margin-bottom: 0.5rem;">GENERATED REEL</div>
+                        <div style="color: #888; font-size: 0.85rem;">
+                            Vibe: {script_data.get('video_vibe', 'professional').upper()} | 
+                            Duration: ~{script_data.get('estimated_duration', 45)}s
+                        </div>
                     </div>
                     """, unsafe_allow_html=True)
                     
-                    st.markdown('<div class="upload-label">THE HOOK (0-5s)</div>', unsafe_allow_html=True)
-                    st.markdown(f'<div style="color: #FFF; padding: 0.75rem; background: rgba(255,255,255,0.05); border-radius: 4px; margin-bottom: 1rem;">{script_data.get("hook", "N/A")}</div>', unsafe_allow_html=True)
+                    # Video preview
+                    if os.path.exists(final_video):
+                        st.video(final_video)
                     
-                    st.markdown('<div class="upload-label">FORMATTED SCRIPT</div>', unsafe_allow_html=True)
-                    
-                    # Display formatted script with proper line breaks
-                    formatted_lines = script_data.get('formatted_script', [])
-                    script_display = "\n".join(formatted_lines)
-                    
-                    st.text_area("", value=script_display, height=300, label_visibility="collapsed")
-                    
+                    # Download button
                     st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
-                    st.download_button(
-                        "📥 DOWNLOAD SCRIPT JSON",
-                        data=open('generated_script.json', 'rb').read(),
-                        file_name='generated_script.json',
-                        mime='application/json',
-                        use_container_width=True
-                    )
+                    if os.path.exists(final_video):
+                        st.download_button(
+                            "📥 DOWNLOAD REEL",
+                            data=open(final_video, 'rb').read(),
+                            file_name=final_video,
+                            mime='video/mp4',
+                            use_container_width=True
+                        )
                     st.markdown('</div>', unsafe_allow_html=True)
                     
+                    # Success message
                     st.markdown("""
-                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 184, 0, 0.1); border: 1px solid #FFB800; border-radius: 8px;">
-                        <div style="color: #FFB800; font-weight: bold; margin-bottom: 0.5rem;">⚠ NEXT STEPS:</div>
+                    <div style="margin-top: 1rem; padding: 1rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 8px;">
+                        <div style="color: #00FF88; font-weight: bold; margin-bottom: 0.5rem;">🎬 READY TO UPLOAD!</div>
                         <div style="color: #CCC; font-size: 0.85rem;">
-                            1. Use a TTS service (ElevenLabs, Google TTS) to convert script to audio<br>
-                            2. Upload the audio to "Audio to Reels" pipeline<br>
-                            3. Generate your final video
+                            Your professional reel is ready for Instagram, TikTok, or YouTube Shorts
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
                 
             except Exception as e:
+                import traceback
+                error_details = traceback.format_exc()
                 log_placeholder.markdown(render_log(f"// ERROR: {str(e)}", is_error=True), unsafe_allow_html=True)
+                st.error(f"Pipeline failed: {str(e)}\n\n{error_details}")
+                agent_status.empty()
