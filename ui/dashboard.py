@@ -11,25 +11,25 @@ PIPELINES = [
         "agents": 4
     },
     {
-        "id": "topic_to_script",
-        "name": "Topic to Script",
-        "description": "Research any topic and generate a professional video script with AI-powered content generation.",
+        "id": "topic_to_reels",
+        "name": "Topic to Reels",
+        "description": "Generate high-retention scripts from topics, then create professional reels with AI agents.",
         "lazy_level": 20,
-        "status": "locked",
+        "status": "active",
         "agents": 1
     },
     {
         "id": "topic_to_speech",
         "name": "Topic to Speech",
-        "description": "Convert topics into natural-sounding speech with Google AI Studio's advanced TTS technology.",
+        "description": "Convert topics into natural-sounding speech with advanced TTS technology.",
         "lazy_level": 60,
         "status": "locked",
         "agents": 3
     },
     {
-        "id": "topic_to_reels",
-        "name": "Topic to Reels",
-        "description": "Ultimate automation: From topic research to final video. Maximum laziness, maximum results.",
+        "id": "full_automation",
+        "name": "Full Automation",
+        "description": "Ultimate end-to-end: Topic → Script → Speech → Video. Maximum laziness, maximum results.",
         "lazy_level": 100,
         "status": "locked",
         "agents": 7

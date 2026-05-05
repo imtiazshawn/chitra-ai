@@ -10,10 +10,13 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - **Step 3**: Assemble final video with FFmpeg
 - **Step 4**: Add professional captions with word-level timing and global theme consistency
 
+### Topic to Reels (Active - 20% Automation)
+- **Step 1**: Generate high-retention script from topic using AI (Script Research Agent)
+- **Step 2**: Convert script to audio (Manual TTS - Coming Soon)
+- **Step 3-6**: Use Audio to Reels pipeline
+
 ### Coming Soon
-- **Topic to Script** (20% Automation) - Research topics and generate scripts
 - **Topic to Speech** (60% Automation) - Convert topics to natural speech
-- **Topic to Reels** (100% Automation) - Full end-to-end automation
 
 ## Features
 
@@ -80,7 +83,27 @@ Then open your browser to the URL shown (usually http://localhost:8501)
 - Download final video
 - Video preview
 
+**Topic to Reels Features:**
+- Enter topic/idea
+- AI generates high-retention script (40-50s)
+- Senior Architect writing style
+- Download script JSON
+- Manual TTS conversion (for now)
+- Use Audio to Reels for video generation
+
 ### Command Line (Advanced)
+
+#### Topic to Reels: Generate Script
+```bash
+python src/script_agent.py
+```
+This creates `generated_script.json` with:
+- High-retention 40-50s script
+- Hook, tension, solution, CTA structure
+- Senior Architect writing style
+- Suggested video vibe
+
+Then convert script to audio using TTS service and proceed with Audio to Reels pipeline.
 
 #### Step 1: Transcribe Audio & Generate Video Map
 ```bash
@@ -121,6 +144,7 @@ This creates `final_output.mp4` with:
 ChitraAI/
 ├── venv/                 # Virtual environment
 ├── src/                  # Backend pipeline code
+│   ├── script_agent.py  # NEW: Script generation from topic
 │   ├── main.py          # Step 1: Transcription & mapping
 │   ├── download_videos.py # Step 2: Video download
 │   ├── assemble_video.py  # Step 3: Video assembly
@@ -132,10 +156,12 @@ ChitraAI/
 │   ├── components.py    # Reusable UI components
 │   ├── dashboard.py     # Landing dashboard
 │   ├── audio_to_reels.py # Audio to Reels page
+│   ├── topic_to_reels.py # NEW: Topic to Reels page
 │   └── pipeline.py      # Pipeline execution logic
 ├── app.py               # 🎨 Main app with routing
 ├── assets/              # Downloaded video clips
 ├── temp/                # Temporary processed clips
+├── generated_script.json # NEW: Generated script output
 ├── video_map.json       # Generated video map
 ├── draft_video.mp4      # Assembled video
 ├── final_output.mp4     # Final video with captions

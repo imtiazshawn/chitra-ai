@@ -10,6 +10,7 @@ from ui.styles import CYBERPUNK_CSS
 from ui.dashboard_styles import DASHBOARD_CSS
 from ui.dashboard import render_dashboard, render_back_button
 from ui.audio_to_reels import render_audio_to_reels
+from ui.topic_to_reels import render_topic_to_reels
 
 # Page config
 st.set_page_config(
@@ -40,6 +41,13 @@ elif st.session_state.current_page == 'audio_to_reels':
     
     # Render Audio to Reels pipeline
     render_audio_to_reels()
+
+elif st.session_state.current_page == 'topic_to_reels':
+    # Render back button
+    render_back_button()
+    
+    # Render Topic to Reels pipeline
+    render_topic_to_reels()
 
 else:
     # Fallback to dashboard
