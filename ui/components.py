@@ -1,14 +1,14 @@
 """Reusable UI components for ChitraAI"""
 import streamlit as st
 
-def render_header():
+def render_header(agent_count=4):
     """Render the main header with status"""
-    st.markdown("""
+    st.markdown(f"""
     <div class="status-bar">
         <div class="neon-title">⚡ CHITRA AI PIPELINE</div>
         <div class="system-status">
             <div><span class="status-dot"></span>STATUS: ONLINE</div>
-            <div style="margin-top: 0.15rem;">AGENTS: 04</div>
+            <div style="margin-top: 0.15rem;">AGENTS: {agent_count:02d}</div>
         </div>
     </div>
     """, unsafe_allow_html=True)

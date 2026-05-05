@@ -37,9 +37,8 @@ if st.session_state.current_page == 'dashboard':
 
 elif st.session_state.current_page == 'audio_to_reels':
     # Render back button
-    st.markdown('<div class="back-button" onclick="window.location.reload()">', unsafe_allow_html=True)
     render_back_button()
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div style="margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
     
     # Render Audio to Reels pipeline
     render_audio_to_reels()
@@ -47,6 +46,7 @@ elif st.session_state.current_page == 'audio_to_reels':
 elif st.session_state.current_page == 'topic_to_script':
     # Render back button
     render_back_button()
+    st.markdown('<div style="margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
     
     # Render Topic to Script pipeline
     render_topic_to_script()
@@ -54,6 +54,7 @@ elif st.session_state.current_page == 'topic_to_script':
 elif st.session_state.current_page == 'topic_to_reels':
     # Render back button
     render_back_button()
+    st.markdown('<div style="margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
     
     # Render Topic to Reels pipeline
     render_topic_to_reels()
@@ -61,6 +62,7 @@ elif st.session_state.current_page == 'topic_to_reels':
 elif st.session_state.current_page == 'topic_to_speech':
     # Render back button
     render_back_button()
+    st.markdown('<div style="margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
     
     # Render Topic to Speech pipeline
     render_topic_to_speech()

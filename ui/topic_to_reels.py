@@ -6,7 +6,8 @@ import sys
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from ui.components import render_log
+from ui.components import render_log, render_header, render_status_cards
+from assemble_video import check_ffmpeg
 
 def render_topic_to_reels():
     """Render the Topic to Reels full automation pipeline"""
@@ -19,32 +20,13 @@ def render_topic_to_reels():
     groq_status = groq_key and groq_key != 'your_groq_api_key_here'
     elevenlabs_status = elevenlabs_key and elevenlabs_key != 'your_elevenlabs_api_key_here'
     pexels_status = pexels_key and pexels_key != 'your_pexels_api_key_here'
+    ffmpeg_ok = check_ffmpeg()
 
     # Header
-    st.markdown("""
-    <div class="page-header">
-        <div class="page-title">TOPIC TO REELS</div>
-        <div class="page-subtitle">80% Automation: Topic → Script → Speech → Video</div>
-    </div>
-    """, unsafe_allow_html=True)
+    render_header(agent_count=6)
 
-    # Status Cards
-    with st.container(border=True):
-        st.markdown('<div class="panel-title">// SYSTEM STATUS</div>', unsafe_allow_html=True)
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            status_icon = "✓" if groq_status else "✗"
-            status_color = "#00FF88" if groq_status else "#FF0080"
-            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} GROQ (Script)</div>', unsafe_allow_html=True)
-        with col2:
-            if elevenlabs_status:
-                st.markdown(f'<div style="color: #00FF88; font-size: 0.9rem;">✓ ELEVENLABS (Voice)</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div style="color: #FFA500; font-size: 0.9rem;">⚡ EDGE-TTS (Backup)</div>', unsafe_allow_html=True)
-        with col3:
-            status_icon = "✓" if pexels_status else "✗"
-            status_color = "#00FF88" if pexels_status else "#FF0080"
-            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} PEXELS (Video)</div>', unsafe_allow_html=True)
+    # Status Cards (showing GROQ, PEXELS, FFMPEG)
+    render_status_cards(groq_status, pexels_status, ffmpeg_ok)
 
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])

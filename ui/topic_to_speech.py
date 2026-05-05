@@ -2,8 +2,9 @@
 import streamlit as st
 import os
 
-from ui.components import render_log
+from ui.components import render_log, render_header, render_status_cards
 from speech_agent import topic_to_speech
+from assemble_video import check_ffmpeg
 
 __all__ = ['render_topic_to_speech']
 
@@ -16,28 +17,13 @@ def render_topic_to_speech():
     
     groq_status = groq_key and groq_key != 'your_groq_api_key_here'
     elevenlabs_status = elevenlabs_key and elevenlabs_key != 'your_elevenlabs_api_key_here'
+    ffmpeg_ok = check_ffmpeg()
 
     # Header
-    st.markdown("""
-    <div class="page-header">
-        <div class="page-title">TOPIC TO SPEECH</div>
-        <div class="page-subtitle">AI Script Generation → Voice Synthesis</div>
-    </div>
-    """, unsafe_allow_html=True)
+    render_header(agent_count=2)
 
     # Status Cards
-    with st.container(border=True):
-        st.markdown('<div class="panel-title">// SYSTEM STATUS</div>', unsafe_allow_html=True)
-        col1, col2 = st.columns(2)
-        with col1:
-            status_icon = "✓" if groq_status else "✗"
-            status_color = "#00FF88" if groq_status else "#FF0080"
-            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} GROQ API (Script)</div>', unsafe_allow_html=True)
-        with col2:
-            if elevenlabs_status:
-                st.markdown(f'<div style="color: #00FF88; font-size: 0.9rem;">✓ ELEVENLABS (Primary)</div>', unsafe_allow_html=True)
-            else:
-                st.markdown(f'<div style="color: #FFA500; font-size: 0.9rem;">⚡ EDGE-TTS (Backup)</div>', unsafe_allow_html=True)
+    render_status_cards(groq_status, False, ffmpeg_ok)
 
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
