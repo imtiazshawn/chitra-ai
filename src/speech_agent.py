@@ -22,13 +22,13 @@ EDGE_TTS_VOICE = "en-US-ChristopherNeural"  # Deep, authoritative male
 
 
 def clean_script_for_tts(formatted_script):
-    """Clean script by removing [Director Cues] and ALL pause-causing punctuation.
+    """Clean script by removing [Director Cues] and adding strategic pauses.
     
     Args:
         formatted_script: List of script lines with [Director Cues]
         
     Returns:
-        Cleaned script text ready for fast-paced TTS (ElevenLabs/Edge-TTS)
+        Cleaned script text with natural breathing pauses for TTS
     """
     cleaned_lines = []
     
@@ -42,14 +42,13 @@ def clean_script_for_tts(formatted_script):
         cleaned_line = cleaned_line.strip()
         
         if cleaned_line:
-            # Remove ALL pause-causing punctuation: periods, commas, semicolons, colons
-            # Keep only apostrophes and hyphens for word integrity
-            cleaned_line = re.sub(r'[.,;:!?]', '', cleaned_line)
+            # Remove periods and exclamation marks (cause 1s pause)
+            cleaned_line = re.sub(r'[.!?]', '', cleaned_line)
             cleaned_lines.append(cleaned_line)
     
-    # Join with single space for continuous fast flow
-    # No commas, no periods between sentences = minimal pauses
-    clean_text = ' '.join(cleaned_lines)
+    # Join with commas for natural 0.2-0.3s breathing pauses
+    # This mimics how real content creators speak
+    clean_text = ', '.join(cleaned_lines) + '.'
     
     return clean_text
 
