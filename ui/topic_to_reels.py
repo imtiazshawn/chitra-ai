@@ -71,21 +71,6 @@ def render_topic_to_reels():
             )
             st.markdown('</div>', unsafe_allow_html=True)
             
-            # Info box
-            st.markdown("""
-            <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 6px;">
-                <div style="color: #00FF88; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.25rem;">⚡ 6 AI AGENTS</div>
-                <div style="color: #CCC; font-size: 0.75rem;">
-                    1. Script Agent → High-retention script<br>
-                    2. Voice Agent → Professional voiceover<br>
-                    3. Intelligence Agent → Video mapping<br>
-                    4. Download Agent → Visual assets<br>
-                    5. Assembly Agent → Video compilation<br>
-                    6. Subtitle Agent → Dynamic captions
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
             # Generate Button
             st.markdown('<div style="margin-top: 1.5rem;">', unsafe_allow_html=True)
             generate_btn = st.button("⚡ GENERATE REEL", use_container_width=True, type="primary")
@@ -95,7 +80,79 @@ def render_topic_to_reels():
         with st.container(border=True):
             st.markdown('<div class="panel-title">// AGENT CONSOLE</div>', unsafe_allow_html=True)
             
-            # Agent status placeholder
+            # Agent Pipeline Display
+            agent_pipeline = st.empty()
+            agent_pipeline.markdown("""
+            <div class="agent-list">
+            <div class="agent-item">
+                <div class="agent-number">01</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">SCRIPT AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Generate high-retention script<br/>→ Hook, tension, solution, CTA structure</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">02</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">VOICE AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Synthesize professional voiceover<br/>→ ElevenLabs or Edge-TTS backup</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">03</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">INTELLIGENCE AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Transcribe and analyze audio<br/>→ Generate timestamped video map</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">04</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">DOWNLOAD AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Extract visual keywords<br/>→ Download videos from Pexels</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">05</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">ASSEMBLY AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Sync clips with audio<br/>→ Render 9:16 vertical format</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">06</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">SUBTITLE AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Generate word-level captions<br/>→ Burn subtitles and logo</div>
+                </div>
+            </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Agent status placeholder for updates
             agent_status = st.empty()
             
             # Output placeholder
