@@ -34,9 +34,10 @@ def render_topic_to_speech():
             status_color = "#00FF88" if groq_status else "#FF0080"
             st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} GROQ API (Script)</div>', unsafe_allow_html=True)
         with col2:
-            status_icon = "✓" if elevenlabs_status else "✗"
-            status_color = "#00FF88" if elevenlabs_status else "#FF0080"
-            st.markdown(f'<div style="color: {status_color}; font-size: 0.9rem;">{status_icon} ELEVENLABS (Voice)</div>', unsafe_allow_html=True)
+            if elevenlabs_status:
+                st.markdown(f'<div style="color: #00FF88; font-size: 0.9rem;">✓ ELEVENLABS (Primary)</div>', unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="color: #FFA500; font-size: 0.9rem;">⚡ EDGE-TTS (Backup)</div>', unsafe_allow_html=True)
 
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
@@ -92,8 +93,6 @@ def render_topic_to_speech():
             log_placeholder.markdown(render_log("// ERROR: Topic cannot be empty", is_error=True), unsafe_allow_html=True)
         elif not groq_status:
             log_placeholder.markdown(render_log("// ERROR: GROQ_API_KEY not configured", is_error=True), unsafe_allow_html=True)
-        elif not elevenlabs_status:
-            log_placeholder.markdown(render_log("// ERROR: ELEVENLABS_API_KEY not configured", is_error=True), unsafe_allow_html=True)
         else:
             try:
                 # Step 1: Script Generation
