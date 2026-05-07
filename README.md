@@ -10,18 +10,33 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - **Step 3**: Assemble final video with FFmpeg
 - **Step 4**: Add professional captions with word-level timing and global theme consistency
 
-### Topic to Reels (Active - 20% Automation)
-- **Step 1**: Generate high-retention script from topic using AI (Script Research Agent)
-- **Step 2**: Convert script to audio (Manual TTS - Coming Soon)
-- **Step 3-6**: Use Audio to Reels pipeline
+### Topic to Script (Active - 20% Automation)
+- **Step 1**: Generate high-retention script from topic using AI (Script Agent)
+- Manual TTS conversion required
+- Use Audio to Reels for video generation
 
 ### Topic to Speech (Active - 60% Automation)
 - **Step 1**: Generate high-retention script with [Director Cues] (Script Agent)
 - **Step 2**: Synthesize audio using ElevenLabs professional voices (Voice Agent)
-- **Step 3**: Use Audio to Reels pipeline
+- Use Audio to Reels for video generation
 
-### Coming Soon
-- **Full Automation** (100% Automation) - Complete end-to-end: Topic → Script → Speech → Video
+### Topic to Reels (Active - 80% Automation)
+- **Step 1**: Generate high-retention script from topic using AI (Script Agent)
+- **Step 2**: Synthesize professional voiceover (Voice Agent)
+- **Step 3**: Transcribe and map visuals (Intelligence Agent)
+- **Step 4**: Download videos from Pexels (Download Agent)
+- **Step 5**: Assemble video with perfect sync (Assembly Agent)
+- **Step 6**: Add professional captions (Subtitle Agent)
+
+### Full Automation (Active - 100% Automation)
+- **Step 1**: Analyze YouTube channel and suggest trending topic (Spy Agent)
+- **Step 2**: Generate high-retention script (Script Agent)
+- **Step 3**: Synthesize professional voiceover (Voice Agent)
+- **Step 4**: Transcribe and map visuals (Intelligence Agent)
+- **Step 5**: Download videos from Pexels (Download Agent)
+- **Step 6**: Assemble video with perfect sync (Assembly Agent)
+- **Step 7**: Add professional captions (Subtitle Agent)
+- **Step 8**: Generate viral titles, SEO descriptions, and tags (Metadata Agent)
 
 ## Features
 
@@ -91,14 +106,21 @@ Then open your browser to the URL shown (usually http://localhost:8501)
 
 **Topic to Reels Features:**
 - Enter topic/idea
-- AI generates high-retention script (40-50s)
-- Senior Architect writing style
-- Optional reading instructions with [Director Cues]
-- Punchy, segmented format (5-7 words per line)
-- Optional reading instructions (max 4-5 cues per script)
-- Download script JSON
-- Manual TTS conversion (for now)
-- Use Audio to Reels for video generation
+- Complete 6-agent automation pipeline
+- AI generates script → synthesizes voice → creates video
+- Professional captions with word-level highlighting
+- Download final reel
+- Video preview
+
+**Full Automation Features:**
+- Paste YouTube channel URL
+- AI analyzes channel and suggests trending topic
+- Complete 8-agent automation pipeline
+- Generates script → voice → video → SEO metadata
+- 3 viral title options with descriptions and tags
+- Copy-to-clipboard SEO metadata
+- Download final reel
+- Video preview
 
 **Topic to Speech Features:**
 - Enter topic/idea
@@ -189,8 +211,10 @@ This creates `final_output.mp4` with:
 ChitraAI/
 ├── venv/                 # Virtual environment
 ├── src/                  # Backend pipeline code
+│   ├── spy_agent.py     # Market research & topic suggestion
 │   ├── script_agent.py  # Script generation from topic
 │   ├── speech_agent.py  # Topic to Speech pipeline
+│   ├── metadata_agent.py # SEO optimization (titles, tags)
 │   ├── main.py          # Step 1: Transcription & mapping
 │   ├── download_videos.py # Step 2: Video download
 │   ├── assemble_video.py  # Step 3: Video assembly
@@ -202,8 +226,10 @@ ChitraAI/
 │   ├── components.py    # Reusable UI components
 │   ├── dashboard.py     # Landing dashboard
 │   ├── audio_to_reels.py # Audio to Reels page
+│   ├── topic_to_script.py # Topic to Script page
 │   ├── topic_to_reels.py # Topic to Reels page
 │   ├── topic_to_speech.py # Topic to Speech page
+│   ├── full_automation.py # Full Automation page
 │   └── pipeline.py      # Pipeline execution logic
 ├── app.py               # 🎨 Main app with routing
 ├── assets/              # Downloaded video clips

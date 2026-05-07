@@ -37,10 +37,10 @@ PIPELINES = [
     {
         "id": "full_automation",
         "name": "Full Automation",
-        "description": "Ultimate end-to-end: Topic → Script → Speech → Video. Maximum laziness, maximum results.",
+        "description": "YouTube Channel → AI Analysis → Topic → Script → Speech → Video → SEO. Complete hands-free content creation.",
         "lazy_level": 100,
-        "status": "locked",
-        "agents": 7
+        "status": "active",
+        "agents": 8
     }
 ]
 
