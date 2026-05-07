@@ -32,7 +32,7 @@ CYBERPUNK_CSS = """
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: 2rem;
     }
     .status-bar .neon-title { margin: 0; line-height: 1.1; }
     

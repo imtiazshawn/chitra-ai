@@ -28,9 +28,6 @@ def render_autonomous_engine():
     # Header
     render_header(agent_count=8)
 
-    # Status Cards
-    render_status_cards(groq_status, pexels_status, ffmpeg_ok)
-
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
 
@@ -60,7 +57,7 @@ def render_autonomous_engine():
             # Info box
             st.markdown("""
             <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 6px;">
-                <div style="color: #00FF88; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.25rem;">🤖 AUTONOMOUS ENGINE</div>
+                <div style="color: #00FF88; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.25rem;">AUTONOMOUS ENGINE</div>
                 <div style="color: #CCC; font-size: 0.75rem;">
                     AI analyzes channel → Suggests topic<br>
                     Generates script → Creates voiceover<br>

@@ -22,9 +22,6 @@ def render_topic_to_speech():
     # Header
     render_header(agent_count=2)
 
-    # Status Cards
-    render_status_cards(groq_status, False, ffmpeg_ok)
-
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
 

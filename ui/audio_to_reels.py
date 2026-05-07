@@ -26,9 +26,6 @@ def render_audio_to_reels():
     # Header
     render_header()
 
-    # Status Cards
-    render_status_cards(groq_status, pexels_status, ffmpeg_ok)
-
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
 

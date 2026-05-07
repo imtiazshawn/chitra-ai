@@ -88,7 +88,7 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 
 ## Usage
 
-### 🎨 Web Interface (Recommended)
+### Web Interface (Recommended)
 ```bash
 streamlit run app.py
 ```

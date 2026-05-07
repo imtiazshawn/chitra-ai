@@ -21,9 +21,6 @@ def render_topic_to_script():
     # Header
     render_header(agent_count=1)
 
-    # Status Cards
-    render_status_cards(groq_status, False, ffmpeg_ok)
-
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
 
@@ -52,7 +49,7 @@ def render_topic_to_script():
             # Info box
             st.markdown("""
             <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 6px;">
-                <div style="color: #00FF88; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.25rem;">📝 SCRIPT ONLY</div>
+                <div style="color: #00FF88; font-size: 0.85rem; font-weight: bold; margin-bottom: 0.25rem;">SCRIPT ONLY</div>
                 <div style="color: #CCC; font-size: 0.75rem;">
                     Generates high-retention 40-50s script<br>
                     Perfect for content planning<br>
