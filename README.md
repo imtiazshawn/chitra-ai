@@ -38,12 +38,16 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - **Step 7**: Add professional captions (Subtitle Agent)
 - **Step 8**: Generate viral titles, SEO descriptions, and tags (Metadata Agent)
 
-## Features
+## Professional Features
 
-- **🎨 Landing Dashboard**: Select from multiple AI pipelines
-- **⚡ Modular Architecture**: Clean, maintainable codebase
+- **🎨 Landing Dashboard**: Select from multiple AI pipelines with automation levels
+- **⚡ Modular Architecture**: Clean, maintainable, professional codebase
 - **🎭 Cyberpunk UI**: Matte black with neon orange/red gradients
-- **🤖 Agent-Based**: Each step is handled by a specialized agent
+- **🤖 Agent-Based**: Each step handled by specialized autonomous agents
+- **🔄 State Management**: Smart UI controls prevent accidental clicks
+- **✕ Cancel Control**: Stop processing at any time with cleanup
+- **🎯 Seamless Looping**: Video clips loop infinitely to match audio duration
+- **📊 Professional SEO**: Copy-paste ready metadata in text areas
 
 ## Setup
 
@@ -114,11 +118,13 @@ Then open your browser to the URL shown (usually http://localhost:8501)
 
 **Full Automation Features:**
 - Paste YouTube channel URL
+- Click "Analyze & Generate" button
 - AI analyzes channel and suggests trending topic
-- Complete 8-agent automation pipeline
+- Complete 8-agent autonomous pipeline
 - Generates script → voice → video → SEO metadata
-- 3 viral title options with descriptions and tags
-- Copy-to-clipboard SEO metadata
+- 3 SEO options with copy-paste text areas
+- Viral titles, descriptions with hashtags, optimized tags
+- Cancel button to stop processing anytime
 - Download final reel
 - Video preview
 
@@ -229,7 +235,7 @@ ChitraAI/
 │   ├── topic_to_script.py # Topic to Script page
 │   ├── topic_to_reels.py # Topic to Reels page
 │   ├── topic_to_speech.py # Topic to Speech page
-│   ├── full_automation.py # Full Automation page
+│   ├── autonomous_engine.py # 100% Automation engine
 │   └── pipeline.py      # Pipeline execution logic
 ├── app.py               # 🎨 Main app with routing
 ├── assets/              # Downloaded video clips

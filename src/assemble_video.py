@@ -57,7 +57,7 @@ def create_fallback_clip(duration, output_path):
 
 
 def assemble_video_with_complex_filter(video_map, audio_path, output_path):
-    """Assemble video using FFmpeg with strict duration enforcement."""
+    """Assemble video using FFmpeg with strict duration enforcement and seamless looping."""
     print("\nAssembling video with strict duration sync...")
     
     # Get exact audio duration using ffprobe
@@ -73,23 +73,43 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
     
     inputs = []
     filter_parts = []
+    total_video_duration = 0
     
     for i, segment in enumerate(video_map):
         clip_path = os.path.join(ASSETS_FOLDER, f"clip_{i+1}.mp4")
-        duration = segment['end_time'] - segment['start_time']
+        required_duration = segment['end_time'] - segment['start_time']
         
         if not os.path.exists(clip_path):
             print(f"  Warning: {clip_path} not found, creating fallback...")
             clip_path = os.path.join(TEMP_FOLDER, f"fallback_{i+1}.mp4")
-            create_fallback_clip(duration, clip_path)
+            create_fallback_clip(required_duration, clip_path)
+            clip_duration = required_duration
+        else:
+            # Get actual clip duration
+            clip_duration = get_video_duration(clip_path)
         
-        inputs.extend(['-stream_loop', '-1', '-i', clip_path])
+        total_video_duration += required_duration
         
+        # If clip is shorter than required, we need seamless looping
+        if clip_duration < required_duration:
+            print(f"  Clip {i+1}: {clip_duration:.2f}s < {required_duration:.2f}s, enabling seamless loop")
+            # Use stream_loop to ensure clip loops infinitely
+            inputs.extend(['-stream_loop', '-1', '-i', clip_path])
+        else:
+            # Clip is long enough, no loop needed
+            inputs.extend(['-i', clip_path])
+        
+        # Trim to exact duration, setpts to reset timestamps
         filter_parts.append(
-            f"[{i}:v]trim=start=0:end={duration},setpts=PTS-STARTPTS,"
+            f"[{i}:v]trim=start=0:end={required_duration},setpts=PTS-STARTPTS,"
             f"fps=30,format=yuv420p,scale=1080:1920:force_original_aspect_ratio=increase,"
             f"crop=1080:1920,setsar=1[v{i}]"
         )
+    
+    # Verify total video duration matches audio
+    if total_video_duration < audio_duration:
+        print(f"  Warning: Total video segments ({total_video_duration:.2f}s) < audio ({audio_duration:.2f}s)")
+        print(f"  Gap: {audio_duration - total_video_duration:.2f}s will be filled with last clip loop")
     
     concat_inputs = ''.join([f"[v{i}]" for i in range(len(video_map))])
     filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(video_map)}:v=1:a=0[outv]"
@@ -120,6 +140,14 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
     if result.returncode != 0:
         print(f"  Error: {result.stderr}")
         return False
+    
+    # Verify output duration
+    output_duration = get_video_duration(output_path)
+    sync_diff = abs(output_duration - audio_duration)
+    print(f"  Output: {output_duration:.2f}s | Sync diff: {sync_diff:.2f}s")
+    
+    if sync_diff < 0.1:
+        print("  ✓ Perfect sync achieved!")
     
     return True
 

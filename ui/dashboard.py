@@ -35,8 +35,8 @@ PIPELINES = [
         "agents": 6
     },
     {
-        "id": "full_automation",
-        "name": "Full Automation",
+        "id": "autonomous_engine",
+        "name": "100% Automation",
         "description": "YouTube Channel → AI Analysis → Topic → Script → Speech → Video → SEO. Complete hands-free content creation.",
         "lazy_level": 100,
         "status": "active",

@@ -13,7 +13,7 @@ from ui.audio_to_reels import render_audio_to_reels
 from ui.topic_to_script import render_topic_to_script
 from ui.topic_to_reels import render_topic_to_reels
 from ui.topic_to_speech import render_topic_to_speech
-from ui.full_automation import render_full_automation
+from ui.autonomous_engine import render_autonomous_engine
 
 # Page config
 st.set_page_config(
@@ -68,13 +68,13 @@ elif st.session_state.current_page == 'topic_to_speech':
     # Render Topic to Speech pipeline
     render_topic_to_speech()
 
-elif st.session_state.current_page == 'full_automation':
+elif st.session_state.current_page == 'autonomous_engine':
     # Render back button
     render_back_button()
     st.markdown('<div style="margin-bottom: 1.5rem;"></div>', unsafe_allow_html=True)
     
-    # Render Full Automation pipeline
-    render_full_automation()
+    # Render Autonomous Engine pipeline
+    render_autonomous_engine()
 
 else:
     # Fallback to dashboard
