@@ -135,9 +135,13 @@ def create_word_segments(video_map):
     return word_segments
 
 
-def create_dynamic_highlight_subtitles(word_segments, video_map, output_file='captions.ass'):
+def create_dynamic_highlight_subtitles(word_segments, video_map, output_file='captions.ass', audio_duration=None):
     """Create professional ASS subtitle with global theme and dynamic word-level highlighting."""
     print("Creating professional dynamic subtitle file...")
+    
+    # Get audio duration from video_map if not provided
+    if audio_duration is None and video_map:
+        audio_duration = max(seg['end_time'] for seg in video_map)
     
     # Detect video vibe and get global theme
     video_vibe = detect_video_vibe(video_map)
@@ -146,6 +150,8 @@ def create_dynamic_highlight_subtitles(word_segments, video_map, output_file='ca
     print(f"  Video Vibe: {video_vibe}")
     print(f"  Global Font: {global_font}")
     print(f"  Highlight Color: {primary_highlight_color}")
+    if audio_duration:
+        print(f"  Audio Duration: {audio_duration:.2f}s")
     
     # Convert passive opacity to ASS alpha format (inverted: 255 = transparent, 0 = opaque)
     passive_alpha = 255 - PASSIVE_WORD_OPACITY
@@ -168,6 +174,8 @@ Style: Default,{global_font},{BASE_FONT_SIZE},&H00FFFFFF,&H000000FF,&H00000000,&
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
     
+    last_subtitle_end = 0
+    
     # Add each word segment with dynamic highlighting
     for segment in word_segments:
         words = segment['text'].split()
@@ -181,29 +189,35 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             word_start = start + (word_idx * word_duration)
             word_end = word_start + word_duration
             
+            # Track last subtitle timestamp
+            if word_end > last_subtitle_end:
+                last_subtitle_end = word_end
+            
             # Build the text with highlighting for current word
             formatted_words = []
             for i, w in enumerate(words):
                 if i == word_idx:
                     # ACTIVE WORD: Pop effect with global highlight color
-                    # Scale from 100% -> 115% -> 115% with smooth transition
                     formatted_words.append(
                         f"{{\\c{primary_highlight_color}\\fscx100\\fscy100"
                         f"\\t(0,150,\\fscx{ACTIVE_SCALE_BOOST}\\fscy{ACTIVE_SCALE_BOOST})}}"
                         f"{w.upper()}{{\\r}}"
                     )
                 else:
-                    # PASSIVE WORDS: White with 85% opacity, consistent styling
+                    # PASSIVE WORDS: White with 85% opacity
                     formatted_words.append(
                         f"{{\\c{passive_color}}}{w.upper()}{{\\r}}"
                     )
             
             text = ' '.join(formatted_words)
-            
             start_time = format_time_ass(word_start)
             end_time = format_time_ass(word_end)
-            
             ass_content += f"Dialogue: 0,{start_time},{end_time},Default,,0,0,0,,{text}\n"
+    
+    # Verify subtitle coverage matches audio duration
+    if audio_duration and last_subtitle_end < audio_duration:
+        print(f"  Warning: Subtitles end at {last_subtitle_end:.2f}s but audio is {audio_duration:.2f}s")
+        print(f"  Gap: {audio_duration - last_subtitle_end:.2f}s (this is normal for ending silence)")
     
     # Write to file
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -214,6 +228,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     print(f"  Outline: {OUTLINE_WIDTH}px black")
     print(f"  Shadow: {SHADOW_DEPTH}px depth")
     print(f"  Safe Zone: {SAFE_ZONE_MARGIN}px margin")
+    print(f"  Last subtitle: {last_subtitle_end:.2f}s")
     return output_file
 
 
@@ -221,7 +236,19 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
     """Burn subtitles and overlay logo using FFmpeg."""
     print("\nBurning dynamic subtitles and adding logo overlay...")
     
-    # Check if logo exists
+    # Get exact duration from draft video to preserve it
+    cmd_probe = [
+        'ffprobe', '-v', 'error',
+        '-show_entries', 'format=duration',
+        '-of', 'default=noprint_wrappers=1:nokey=1',
+        input_video
+    ]
+    result = subprocess.run(cmd_probe, capture_output=True, text=True)
+    try:
+        video_duration = float(result.stdout.strip())
+    except:
+        video_duration = None
+    
     if not os.path.exists(logo_path):
         print(f"Warning: Logo file not found: {logo_path}")
         print("Proceeding without logo overlay...")
@@ -229,11 +256,12 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
     else:
         has_logo = True
     
-    # Escape paths for FFmpeg
     subtitle_file_escaped = subtitle_file.replace('\\', '/').replace(':', '\\:')
     
+    # Base flags for strict duration enforcement
+    duration_flags = ['-t', str(video_duration)] if video_duration else []
+    
     if has_logo:
-        # With logo overlay
         cmd = [
             'ffmpeg',
             '-i', input_video,
@@ -246,12 +274,13 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-crf', '23',
-            '-shortest',  # Prevent trailing frames
+            '-fflags', '+genpts',
+            '-async', '1',
+            *duration_flags,
             '-y',
             output_video
         ]
     else:
-        # Without logo overlay
         cmd = [
             'ffmpeg',
             '-i', input_video,
@@ -260,7 +289,9 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
             '-c:v', 'libx264',
             '-preset', 'medium',
             '-crf', '23',
-            '-shortest',  # Prevent trailing frames
+            '-fflags', '+genpts',
+            '-async', '1',
+            *duration_flags,
             '-y',
             output_video
         ]

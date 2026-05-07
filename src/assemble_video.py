@@ -57,13 +57,12 @@ def create_fallback_clip(duration, output_path):
 
 
 def assemble_video_with_complex_filter(video_map, audio_path, output_path):
-    """Assemble video using FFmpeg with infinite looping for perfect sync."""
-    print("\nAssembling video with infinite loop sync...")
+    """Assemble video using FFmpeg with strict duration enforcement."""
+    print("\nAssembling video with strict duration sync...")
     
     # Get exact audio duration using ffprobe
     cmd_probe = [
-        'ffprobe',
-        '-v', 'error',
+        'ffprobe', '-v', 'error',
         '-show_entries', 'format=duration',
         '-of', 'default=noprint_wrappers=1:nokey=1',
         audio_path
@@ -72,7 +71,6 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
     audio_duration = float(result.stdout.strip())
     print(f"  Audio duration: {audio_duration:.2f}s")
     
-    # Prepare inputs with stream_loop for infinite looping
     inputs = []
     filter_parts = []
     
@@ -80,27 +78,22 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
         clip_path = os.path.join(ASSETS_FOLDER, f"clip_{i+1}.mp4")
         duration = segment['end_time'] - segment['start_time']
         
-        # Check if clip exists, create fallback if not
         if not os.path.exists(clip_path):
             print(f"  Warning: {clip_path} not found, creating fallback...")
             clip_path = os.path.join(TEMP_FOLDER, f"fallback_{i+1}.mp4")
             create_fallback_clip(duration, clip_path)
         
-        # Add stream_loop -1 for infinite looping BEFORE -i
         inputs.extend(['-stream_loop', '-1', '-i', clip_path])
         
-        # Build filter with consistent 30fps and proper format
         filter_parts.append(
             f"[{i}:v]trim=start=0:end={duration},setpts=PTS-STARTPTS,"
             f"fps=30,format=yuv420p,scale=1080:1920:force_original_aspect_ratio=increase,"
             f"crop=1080:1920,setsar=1[v{i}]"
         )
     
-    # Concatenate all processed clips
     concat_inputs = ''.join([f"[v{i}]" for i in range(len(video_map))])
     filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(video_map)}:v=1:a=0[outv]"
     
-    # Build FFmpeg command with proper sync flags
     cmd = [
         'ffmpeg',
         *inputs,
@@ -108,20 +101,20 @@ def assemble_video_with_complex_filter(video_map, audio_path, output_path):
         '-filter_complex', filter_complex,
         '-map', '[outv]',
         '-map', f'{len(video_map)}:a',
+        '-t', str(audio_duration),   # Force exact output duration = audio duration
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '23',
         '-c:a', 'aac',
         '-b:a', '192k',
-        '-r', '30',              # Force consistent 30fps
-        '-fflags', '+genpts',    # Generate presentation timestamps
-        '-async', '1',           # Force audio-video sync
-        '-shortest',             # End when shortest stream (audio) ends
+        '-r', '30',
+        '-fflags', '+genpts',
+        '-async', '1',
         '-y',
         output_path
     ]
     
-    print(f"  Processing {len(video_map)} clips with infinite loop...")
+    print(f"  Processing {len(video_map)} clips → forcing {audio_duration:.2f}s output...")
     result = subprocess.run(cmd, capture_output=True, text=True)
     
     if result.returncode != 0:
