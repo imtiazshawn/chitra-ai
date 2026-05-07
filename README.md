@@ -237,7 +237,7 @@ ChitraAI/
 │   ├── topic_to_speech.py # Topic to Speech page
 │   ├── autonomous_engine.py # 100% Automation engine
 │   └── pipeline.py      # Pipeline execution logic
-├── app.py               # 🎨 Main app with routing
+├── app.py               # Main app with routing
 ├── assets/              # Downloaded video clips
 ├── temp/                # Temporary processed clips
 ├── generated_script.json # Generated script output

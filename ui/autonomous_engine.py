@@ -385,47 +385,27 @@ def render_autonomous_engine():
                         )
                     st.markdown('</div>', unsafe_allow_html=True)
                     
-                    # SEO Metadata Options - Professional Display
+                    # SEO Metadata Options - Premium Accordion Layout
                     st.markdown("""
-                    <div style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
-                        <div style="color: #00FF88; font-weight: bold; font-size: 1.1rem;">📊 SEO METADATA OPTIONS</div>
-                        <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Copy and paste for maximum reach</div>
+                    <div style="margin-top: 1.5rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 8px; padding: 1rem;">
+                        <div style="color: #00FF88; font-weight: bold; margin-bottom: 0.75rem;">📊 SEO METADATA (3 OPTIONS)</div>
                     </div>
                     """, unsafe_allow_html=True)
                     
                     for i, option in enumerate(metadata['options'], 1):
-                        st.markdown(f"""
-                        <div style="margin-top: 1rem; padding: 0.5rem; background: rgba(255, 107, 53, 0.05); border-left: 3px solid #FF6B35;">
-                            <div style="color: #FF6B35; font-weight: bold; font-size: 0.9rem;">OPTION {i}</div>
-                        </div>
-                        """, unsafe_allow_html=True)
+                        # Determine focus type for each option
+                        focus_types = ['Viral Focus', 'SEO Focus', 'Curiosity/Hook Focus']
+                        focus_type = focus_types[i-1] if i <= len(focus_types) else 'Balanced Focus'
                         
-                        st.markdown("**Title:**")
-                        st.text_area(
-                            f"Title {i}",
-                            value=option.get('title', 'N/A'),
-                            height=60,
-                            label_visibility="collapsed",
-                            key=f"title_{i}"
-                        )
-                        
-                        st.markdown("**Description:**")
-                        st.text_area(
-                            f"Description {i}",
-                            value=option.get('description', 'N/A'),
-                            height=80,
-                            label_visibility="collapsed",
-                            key=f"desc_{i}"
-                        )
-                        
-                        st.markdown("**Tags:**")
-                        st.text_area(
-                            f"Tags {i}",
-                            value=', '.join(option.get('tags', [])),
-                            height=60,
-                            label_visibility="collapsed",
-                            key=f"tags_{i}"
-                        )
+                        with st.expander(f"Option {i}: {focus_type}", expanded=(i==1)):
+                            st.markdown(f"**Title:**")
+                            st.code(option.get('title', 'N/A'), language=None)
+                            
+                            st.markdown(f"**Description:**")
+                            st.code(option.get('description', 'N/A'), language=None)
+                            
+                            st.markdown(f"**Tags:**")
+                            st.code(', '.join(option.get('tags', [])), language=None)
                     
                     # Success message
                     st.markdown("""
