@@ -2,7 +2,7 @@
 
 A Python-based AI Video Agent system with multiple pipelines for automated video creation.
 
-## 🚀 Pipelines
+## Pipelines
 
 ### Audio to Reels (Active - 40% Automation)
 - **Step 1**: Transcribe audio and generate video map with AI
@@ -40,14 +40,14 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 
 ## Professional Features
 
-- **🎨 Landing Dashboard**: Select from multiple AI pipelines with automation levels
-- **⚡ Modular Architecture**: Clean, maintainable, professional codebase
-- **🎭 Cyberpunk UI**: Matte black with neon orange/red gradients
-- **🤖 Agent-Based**: Each step handled by specialized autonomous agents
-- **🔄 State Management**: Smart UI controls prevent accidental clicks
-- **✕ Cancel Control**: Stop processing at any time with cleanup
-- **🎯 Seamless Looping**: Video clips loop infinitely to match audio duration
-- **📊 Professional SEO**: Copy-paste ready metadata in text areas
+- ** Landing Dashboard**: Select from multiple AI pipelines with automation levels
+- ** Modular Architecture**: Clean, maintainable, professional codebase
+- ** Cyberpunk UI**: Matte black with neon orange/red gradients
+- ** Agent-Based**: Each step handled by specialized autonomous agents
+- ** State Management**: Smart UI controls prevent accidental clicks
+- ** Cancel Control**: Stop processing at any time with cleanup
+- ** Seamless Looping**: Video clips loop infinitely to match audio duration
+- ** Professional SEO**: Copy-paste ready metadata in text areas
 
 ## Setup
 
