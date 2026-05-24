@@ -154,28 +154,68 @@ def download_video_to_project_long(segment, clip_number, assets_folder):
         if response.status_code == 200:
             videos = response.json().get('videos', [])
             
+            # Filter and sort by duration (prefer longer clips 15+ seconds)
+            suitable_videos = []
             for video in videos:
                 video_files = video.get('video_files', [])
                 landscape_files = [vf for vf in video_files if vf.get('width', 0) > vf.get('height', 0)]
                 
                 if landscape_files:
                     landscape_files.sort(key=lambda x: x.get('width', 0), reverse=True)
-                    video_url = landscape_files[0].get('link')
+                    best_file = landscape_files[0]
+                    duration = video.get('duration', 0)
+                    suitable_videos.append({
+                        'url': best_file.get('link'),
+                        'duration': duration
+                    })
+            
+            # Sort by duration (longest first)
+            suitable_videos.sort(key=lambda x: x['duration'], reverse=True)
+            
+            # Try to download
+            for video_info in suitable_videos:
+                video_url = video_info['url']
+                if video_url:
+                    filename = f"clip_{clip_number}.mp4"
+                    filepath = os.path.join(assets_folder, filename)
                     
-                    if video_url:
-                        filename = f"clip_{clip_number}.mp4"
-                        filepath = os.path.join(assets_folder, filename)
-                        
-                        vid_response = requests.get(video_url, stream=True)
-                        if vid_response.status_code == 200:
-                            with open(filepath, 'wb') as f:
-                                for chunk in vid_response.iter_content(chunk_size=8192):
-                                    f.write(chunk)
-                            return True
+                    vid_response = requests.get(video_url, stream=True)
+                    if vid_response.status_code == 200:
+                        with open(filepath, 'wb') as f:
+                            for chunk in vid_response.iter_content(chunk_size=8192):
+                                f.write(chunk)
+                        return True
         
         time.sleep(0.5)
     
     return False
+
+def preprocess_clip_long(clip_path, required_duration, output_path):
+    """Pre-process clip to exact duration by looping if needed."""
+    clip_duration = get_video_duration(clip_path)
+    
+    if clip_duration >= required_duration:
+        # Clip is long enough, just trim it
+        cmd = [
+            'ffmpeg', '-i', clip_path,
+            '-t', str(required_duration),
+            '-c:v', 'libx264', '-preset', 'ultrafast',
+            '-c:a', 'aac', '-y', output_path
+        ]
+    else:
+        # Clip is too short, loop it to exact duration
+        loop_count = int(required_duration / clip_duration) + 2  # Extra loops for safety
+        cmd = [
+            'ffmpeg',
+            '-stream_loop', str(loop_count),
+            '-i', clip_path,
+            '-t', str(required_duration),
+            '-c:v', 'libx264', '-preset', 'ultrafast',
+            '-c:a', 'aac', '-y', output_path
+        ]
+    
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.returncode == 0
 
 def assemble_video_long(video_map, audio_path, output_path, assets_folder, temp_folder):
     """Assemble video from clips in specific project folder (16:9 format)."""
@@ -183,42 +223,49 @@ def assemble_video_long(video_map, audio_path, output_path, assets_folder, temp_
     # Get audio duration
     audio_duration = get_video_duration(audio_path)
     
-    inputs = []
-    filter_parts = []
+    # Calculate total video duration from segments
+    total_video_duration = sum(seg['end_time'] - seg['start_time'] for seg in video_map)
     
+    print(f"Audio duration: {audio_duration:.2f}s")
+    print(f"Video segments total: {total_video_duration:.2f}s")
+    
+    # Step 1: Pre-process all clips to exact durations
+    processed_clips = []
     for i, segment in enumerate(video_map):
         clip_path = os.path.join(assets_folder, f"clip_{i+1}.mp4")
         required_duration = segment['end_time'] - segment['start_time']
+        processed_path = os.path.join(temp_folder, f"processed_{i+1}.mp4")
         
         # Create fallback if clip doesn't exist
         if not os.path.exists(clip_path):
-            clip_path = os.path.join(temp_folder, f"fallback_{i+1}.mp4")
             cmd = [
                 'ffmpeg', '-f', 'lavfi',
                 '-i', f'color=c=black:s=1920x1080:d={required_duration}:r=30',
-                '-c:v', 'libx264', '-preset', 'ultrafast', '-y', clip_path
+                '-c:v', 'libx264', '-preset', 'ultrafast', '-y', processed_path
             ]
             subprocess.run(cmd, capture_output=True)
-            clip_duration = required_duration
         else:
-            clip_duration = get_video_duration(clip_path)
+            # Pre-process clip to exact duration
+            preprocess_clip_long(clip_path, required_duration, processed_path)
         
-        # Use stream_loop for short clips
-        if clip_duration < required_duration:
-            inputs.extend(['-stream_loop', '-1', '-i', clip_path])
-        else:
-            inputs.extend(['-i', clip_path])
+        processed_clips.append(processed_path)
+    
+    # Step 2: Simple assembly - scale, crop, and concat
+    inputs = []
+    filter_parts = []
+    
+    for i, processed_clip in enumerate(processed_clips):
+        inputs.extend(['-i', processed_clip])
         
-        # Trim and scale each clip (16:9 format)
+        # Simple scale and crop for 16:9 (no trim needed - already exact duration)
         filter_parts.append(
-            f"[{i}:v]trim=duration={required_duration},setpts=PTS-STARTPTS,"
-            f"scale=1920:1080:force_original_aspect_ratio=increase,"
-            f"crop=1920:1080,fps=30,format=yuv420p[v{i}]"
+            f"[{i}:v]scale=1920:1080:force_original_aspect_ratio=increase,"
+            f"crop=1920:1080,fps=30,format=yuv420p,setsar=1[v{i}]"
         )
     
-    # Concatenate all clips
-    concat_inputs = ''.join([f"[v{i}]" for i in range(len(video_map))])
-    filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(video_map)}:v=1:a=0[outv]"
+    # Concatenate all clips and trim to exact audio duration
+    concat_inputs = ''.join([f"[v{i}]" for i in range(len(processed_clips))])
+    filter_complex = ';'.join(filter_parts) + f";{concat_inputs}concat=n={len(processed_clips)}:v=1:a=0[concat];[concat]trim=duration={audio_duration},setpts=PTS-STARTPTS,fps=30[outv]"
     
     cmd = [
         'ffmpeg',
@@ -226,15 +273,12 @@ def assemble_video_long(video_map, audio_path, output_path, assets_folder, temp_
         '-i', audio_path,
         '-filter_complex', filter_complex,
         '-map', '[outv]',
-        '-map', f'{len(video_map)}:a',
-        '-t', str(audio_duration),
+        '-map', f'{len(processed_clips)}:a',
         '-c:v', 'libx264',
         '-preset', 'medium',
         '-crf', '23',
-        '-c:a', 'aac',
-        '-b:a', '192k',
+        '-c:a', 'copy',
         '-r', '30',
-        '-vsync', 'cfr',
         '-y', output_path
     ]
     

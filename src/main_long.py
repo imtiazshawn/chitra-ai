@@ -27,6 +27,9 @@ def create_video_map(transcript):
     """Use Groq's Llama model to create a structured video map."""
     print("Creating video map with Llama-3.3...")
     
+    # Get total audio duration
+    total_duration = transcript.segments[-1]['end'] if transcript.segments else 0
+    
     # Prepare transcript text with timestamps
     segments_text = "\n".join([
         f"[{seg['start']:.2f}s - {seg['end']:.2f}s]: {seg['text']}"
@@ -35,12 +38,18 @@ def create_video_map(transcript):
     
     prompt = f"""You are a video editor AI. Analyze this timestamped transcript and create a video map.
 
-Transcript:
+Transcript (Total Duration: {total_duration:.2f} seconds):
 {segments_text}
 
-Create a JSON array where each segment is 5-10 seconds long. For each segment provide:
-- start_time: float (seconds)
-- end_time: float (seconds)
+CRITICAL REQUIREMENTS:
+1. Create segments that cover the ENTIRE audio from 0 to {total_duration:.2f} seconds
+2. Each segment should be 5-10 seconds long
+3. The LAST segment MUST end at exactly {total_duration:.2f} seconds
+4. NO GAPS between segments - they must be continuous
+
+For each segment provide:
+- start_time: float (seconds) - must start where previous segment ended
+- end_time: float (seconds) - must be continuous, last segment ends at {total_duration:.2f}
 - transcript_text: string (the spoken words in this segment)
 - search_queries: array of 3 search query variations (e.g., ["business meeting", "office work", "professional workspace"])
 - fallback_topic: string (generic fallback like "abstract tech", "nature", "city life", "people")
@@ -68,7 +77,47 @@ Return ONLY valid JSON array, no markdown or explanation."""
         response_text = response_text[3:-3].strip()
     
     video_map = json.loads(response_text)
+    
+    # Validate and fix video map to ensure full coverage
+    video_map = validate_and_fix_video_map(video_map, total_duration)
+    
     print(f"Video map created with {len(video_map)} segments")
+    print(f"Coverage: 0s to {video_map[-1]['end_time']:.2f}s (Audio: {total_duration:.2f}s)")
+    return video_map
+
+
+def validate_and_fix_video_map(video_map, total_duration):
+    """Validate video map covers full duration and fix if needed."""
+    if not video_map:
+        return video_map
+    
+    # Check if last segment ends before audio ends
+    last_end = video_map[-1]['end_time']
+    
+    if last_end < total_duration - 0.1:  # More than 0.1s gap (stricter)
+        print(f"Warning: Video map ends at {last_end:.2f}s but audio is {total_duration:.2f}s")
+        print(f"Extending last segment to cover full duration...")
+        
+        # Extend the last segment to cover remaining time
+        video_map[-1]['end_time'] = total_duration
+        
+        # If gap is too large (>5s), add a new segment
+        gap = total_duration - last_end
+        if gap > 5:
+            video_map.append({
+                'start_time': last_end,
+                'end_time': total_duration,
+                'transcript_text': video_map[-1]['transcript_text'],  # Reuse last text
+                'search_queries': video_map[-1]['search_queries'],
+                'fallback_topic': video_map[-1]['fallback_topic'],
+                'caption_style': video_map[-1]['caption_style']
+            })
+            print(f"Added extra segment to fill {gap:.2f}s gap")
+    elif last_end > total_duration + 0.1:  # Video map is longer than audio
+        print(f"Warning: Video map ends at {last_end:.2f}s but audio is only {total_duration:.2f}s")
+        print(f"Trimming last segment to match audio duration...")
+        video_map[-1]['end_time'] = total_duration
+    
     return video_map
 
 
