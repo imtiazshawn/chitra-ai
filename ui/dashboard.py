@@ -11,6 +11,14 @@ PIPELINES = [
         "agents": 4
     },
     {
+        "id": "audio_to_long_video",
+        "name": "Audio to Long Video",
+        "description": "Transform audio files into engaging 16:9 landscape videos with AI-generated visuals and dynamic captions.",
+        "lazy_level": 40,
+        "status": "active",
+        "agents": 4
+    },
+    {
         "id": "topic_to_script",
         "name": "Topic to Script",
         "description": "Generate high-retention scripts from topics with AI. Perfect for content planning and preparation.",
