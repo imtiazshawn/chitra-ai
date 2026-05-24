@@ -48,13 +48,13 @@ FONT_FALLBACK_LIST = [
     'Impact'
 ]
 
-# Professional Long Video Standards (16:9)
-BASE_FONT_SIZE = 56  # Eye-catching size for desktop/TV
-OUTLINE_WIDTH = 3.0  # 3px black outline for visibility
-SHADOW_DEPTH = 1.5   # Subtle drop shadow
-SAFE_ZONE_MARGIN = 120  # Vertical margin (safe zone for 16:9)
-PASSIVE_WORD_OPACITY = 217  # 85% opacity for passive words (255 * 0.85)
-ACTIVE_SCALE_BOOST = 115  # 15% size increase for active word
+# Professional Long Video Standards (16:9) - Subtitle Style
+BASE_FONT_SIZE = 28  # Smaller subtitle-style font for desktop/TV
+OUTLINE_WIDTH = 2.0  # 2px black outline for clean look
+SHADOW_DEPTH = 1.0   # Minimal drop shadow
+SAFE_ZONE_MARGIN = 80  # Bottom margin for 16:9 subtitles
+PASSIVE_WORD_OPACITY = 255  # 100% opacity - no passive/active distinction
+ACTIVE_SCALE_BOOST = 100  # No animation - static text
 
 # ============================================================================
 
@@ -136,8 +136,8 @@ def create_word_segments(video_map):
 
 
 def create_dynamic_highlight_subtitles(word_segments, video_map, output_file='captions_long.ass', audio_duration=None):
-    """Create professional ASS subtitle with global theme and dynamic word-level highlighting."""
-    print("Creating professional dynamic subtitle file (16:9)...")
+    """Create professional ASS subtitle in classic subtitle style (no animations)."""
+    print("Creating professional subtitle file (16:9 - Classic Style)...")
     
     # Get audio duration from video_map if not provided
     if audio_duration is None and video_map:
@@ -149,17 +149,16 @@ def create_dynamic_highlight_subtitles(word_segments, video_map, output_file='ca
     
     print(f"  Video Vibe: {video_vibe}")
     print(f"  Global Font: {global_font}")
-    print(f"  Highlight Color: {primary_highlight_color}")
+    print(f"  Style: Classic Subtitle (No Animation)")
     if audio_duration:
         print(f"  Audio Duration: {audio_duration:.2f}s")
     
-    # Convert passive opacity to ASS alpha format (inverted: 255 = transparent, 0 = opaque)
-    passive_alpha = 255 - PASSIVE_WORD_OPACITY
-    passive_color = f"&H{passive_alpha:02X}FFFFFF"  # White with 85% opacity
+    # Simple white color for subtitles
+    subtitle_color = "&H00FFFFFF"  # Pure white
     
-    # ASS file header with professional standards (16:9 resolution)
+    # ASS file header with professional standards (16:9 resolution) - Bottom aligned
     ass_content = f"""[Script Info]
-Title: ChitraAI Professional Captions (16:9)
+Title: ChitraAI Professional Captions (16:9 - Subtitle Style)
 ScriptType: v4.00+
 WrapStyle: 0
 PlayResX: 1920
@@ -168,7 +167,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,{global_font},{BASE_FONT_SIZE},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,{OUTLINE_WIDTH},{SHADOW_DEPTH},2,50,50,{SAFE_ZONE_MARGIN},1
+Style: Default,{global_font},{BASE_FONT_SIZE},{subtitle_color},&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,{OUTLINE_WIDTH},{SHADOW_DEPTH},2,50,50,{SAFE_ZONE_MARGIN},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -176,43 +175,20 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     
     last_subtitle_end = 0
     
-    # Add each word segment with dynamic highlighting
+    # Add each word segment as simple static subtitle
     for segment in word_segments:
-        words = segment['text'].split()
+        text = segment['text'].upper()  # Simple uppercase text
         start = segment['start']
         end = segment['end']
-        duration = end - start
-        word_duration = duration / len(words)
         
-        # Create individual subtitle for each word timing
-        for word_idx, word in enumerate(words):
-            word_start = start + (word_idx * word_duration)
-            word_end = word_start + word_duration
-            
-            # Track last subtitle timestamp
-            if word_end > last_subtitle_end:
-                last_subtitle_end = word_end
-            
-            # Build the text with highlighting for current word
-            formatted_words = []
-            for i, w in enumerate(words):
-                if i == word_idx:
-                    # ACTIVE WORD: Pop effect with global highlight color
-                    formatted_words.append(
-                        f"{{\\c{primary_highlight_color}\\fscx100\\fscy100"
-                        f"\\t(0,150,\\fscx{ACTIVE_SCALE_BOOST}\\fscy{ACTIVE_SCALE_BOOST})}}"
-                        f"{w.upper()}{{\\r}}"
-                    )
-                else:
-                    # PASSIVE WORDS: White with 85% opacity
-                    formatted_words.append(
-                        f"{{\\c{passive_color}}}{w.upper()}{{\\r}}"
-                    )
-            
-            text = ' '.join(formatted_words)
-            start_time = format_time_ass(word_start)
-            end_time = format_time_ass(word_end)
-            ass_content += f"Dialogue: 0,{start_time},{end_time},Default,,0,0,0,,{text}\n"
+        # Track last subtitle timestamp
+        if end > last_subtitle_end:
+            last_subtitle_end = end
+        
+        # Simple static text - no animations or highlighting
+        start_time = format_time_ass(start)
+        end_time = format_time_ass(end)
+        ass_content += f"Dialogue: 0,{start_time},{end_time},Default,,0,0,0,,{text}\n"
     
     # Verify subtitle coverage matches audio duration
     if audio_duration and last_subtitle_end < audio_duration:
@@ -224,7 +200,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         f.write(ass_content)
     
     print(f"✓ Professional subtitle file created: {output_file}")
-    print(f"  Font Size: {BASE_FONT_SIZE}px (Desktop-optimized)")
+    print(f"  Font Size: {BASE_FONT_SIZE}px (Subtitle-optimized)")
     print(f"  Outline: {OUTLINE_WIDTH}px black")
     print(f"  Shadow: {SHADOW_DEPTH}px depth")
     print(f"  Safe Zone: {SAFE_ZONE_MARGIN}px margin")
@@ -249,12 +225,13 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
     except:
         video_duration = None
     
-    if not os.path.exists(logo_path):
-        print(f"Warning: Logo file not found: {logo_path}")
-        print("Proceeding without logo overlay...")
-        has_logo = False
-    else:
+    # Check if logo exists
+    has_logo = False
+    if logo_path and os.path.exists(logo_path):
         has_logo = True
+    else:
+        print(f"Warning: Logo not provided or not found")
+        print("Proceeding without logo overlay...")
     
     subtitle_file_escaped = subtitle_file.replace('\\', '/').replace(':', '\\:')
     
@@ -350,8 +327,8 @@ def main():
         print(f"\n{'='*40}")
         print(f"✓ Video created successfully!")
         print(f"✓ Output: {output_video}")
-        print(f"✓ Captions: Dynamic word-level highlighting")
-        print(f"✓ Style: Professional with pop animation")
+        print(f"✓ Captions: Classic subtitle style")
+        print(f"✓ Style: Clean and professional")
         if os.path.exists(logo_path):
             print(f"✓ Logo: Top-right corner overlay")
         print(f"\n🎬 Your video is ready for upload!")

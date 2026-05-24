@@ -254,13 +254,12 @@ This creates `final_output.mp4` with:
 python src/add_captions_long.py
 ```
 This creates `final_output_long.mp4` with:
-- **56px desktop-optimized font**
-- **Global theme consistency** (one color + font per video)
-- **Word-level dynamic highlighting** with smooth pop animations
-- **3px black outline + 1.5px shadow** for perfect visibility
-- **85% opacity passive words** for clear focus
-- **Vibe-based font selection** (Tech, Energetic, Professional, etc.)
-- **120px safe zone margin** for 16:9 format
+- **28px subtitle-style font** (classic subtitle appearance)
+- **Static text** (no animations - clean professional look)
+- **2px black outline + 1px shadow** for perfect readability
+- **Bottom-aligned subtitles** (traditional subtitle positioning)
+- **80px safe zone margin** for 16:9 format
+- **Simple white text** (no color highlighting)
 
 **Optional**: Place `logo.png` in the project root for branding overlay.
 
@@ -269,7 +268,27 @@ This creates `final_output_long.mp4` with:
 ```
 ChitraAI/
 ├── venv/                 # Virtual environment
+├── ChitraAI_Projects/   # All video projects (organized by unique ID)
+│   ├── reels_9x16_20240115_143022/
+│   │   ├── assets/      # Downloaded video clips
+│   │   ├── temp/        # Temporary processed clips
+│   │   ├── audio.mp3    # Source audio
+│   │   ├── video_map.json # Video mapping
+│   │   ├── captions.ass # Subtitle file
+│   │   ├── draft_video.mp4 # Assembled video
+│   │   ├── final_output.mp4 # Final video with captions
+│   │   └── logo.png     # Optional logo
+│   ├── long_16x9_20240115_144530/
+│   │   ├── assets/      # Downloaded landscape clips
+│   │   ├── temp/        # Temporary files
+│   │   └── ...          # Same structure as above
+│   └── topic_to_reels_20240115_150045/
+│       ├── assets/
+│       ├── generated_script.json
+│       ├── clean_script.txt
+│       └── ...          # Complete pipeline outputs
 ├── src/                  # Backend pipeline code
+│   ├── workspace_manager.py # Project folder management
 │   ├── spy_agent.py     # Market research & topic suggestion
 │   ├── script_agent.py  # Script generation from topic
 │   ├── speech_agent.py  # Topic to Speech pipeline
@@ -297,20 +316,6 @@ ChitraAI/
 │   ├── pipeline.py      # Pipeline execution logic (9:16)
 │   └── pipeline_long.py # Pipeline execution logic (16:9)
 ├── app.py               # Main app with routing
-├── assets/              # Downloaded video clips (9:16)
-├── assets_long/         # Downloaded video clips (16:9)
-├── temp/                # Temporary processed clips (9:16)
-├── temp_long/           # Temporary processed clips (16:9)
-├── generated_script.json # Generated script output
-├── clean_script.txt     # Clean script for TTS
-├── audio.mp3            # Generated audio
-├── video_map.json       # Generated video map (9:16)
-├── video_map_long.json  # Generated video map (16:9)
-├── draft_video.mp4      # Assembled video (9:16)
-├── draft_video_long.mp4 # Assembled video (16:9)
-├── final_output.mp4     # Final video with captions (9:16)
-├── final_output_long.mp4 # Final video with captions (16:9)
-├── logo.png             # Optional branding logo
 ├── requirements.txt     # Dependencies
 ├── .env                 # API keys (not in git)
 ├── .env.example         # Environment template

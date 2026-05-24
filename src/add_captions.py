@@ -249,12 +249,13 @@ def burn_subtitles_and_logo(input_video, subtitle_file, logo_path, output_video)
     except:
         video_duration = None
     
-    if not os.path.exists(logo_path):
-        print(f"Warning: Logo file not found: {logo_path}")
-        print("Proceeding without logo overlay...")
-        has_logo = False
-    else:
+    # Check if logo exists
+    has_logo = False
+    if logo_path and os.path.exists(logo_path):
         has_logo = True
+    else:
+        print(f"Warning: Logo not provided or not found")
+        print("Proceeding without logo overlay...")
     
     subtitle_file_escaped = subtitle_file.replace('\\', '/').replace(':', '\\:')
     
