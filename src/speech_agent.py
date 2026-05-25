@@ -105,12 +105,13 @@ def generate_speech_elevenlabs(text, output_path="audio.mp3", voice_id=VOICE_ID)
     print(f"✓ Audio generated with ElevenLabs V2")
 
 
-def generate_speech_from_script(script_data, output_path="audio.mp3"):
+def generate_speech_from_script(script_data, output_path="audio.mp3", clean_script_path=None):
     """Generate speech from script with no-break strategy.
     
     Args:
         script_data: Dictionary containing formatted_script array
         output_path: Path to save the audio file
+        clean_script_path: Optional path to save clean script (if None, saves to same dir as audio)
         
     Returns:
         Path to generated audio file
@@ -136,9 +137,14 @@ def generate_speech_from_script(script_data, output_path="audio.mp3"):
     print(f"  Preview: {clean_text[:100]}...")
     
     # Save clean script for reference
-    with open('clean_script.txt', 'w', encoding='utf-8') as f:
+    if clean_script_path is None:
+        # Save in same directory as audio
+        audio_dir = os.path.dirname(output_path) or '.'
+        clean_script_path = os.path.join(audio_dir, 'clean_script.txt')
+    
+    with open(clean_script_path, 'w', encoding='utf-8') as f:
         f.write(clean_text)
-    print(f"✓ Clean script saved to clean_script.txt")
+    print(f"✓ Clean script saved to {clean_script_path}")
     
     # Check API key
     api_key = os.getenv('ELEVENLABS_API_KEY')

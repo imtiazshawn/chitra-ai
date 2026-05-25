@@ -144,7 +144,12 @@ def generate_script(topic, add_reading_instructions=False):
 
 
 def save_script(script_data, output_path="generated_script.json"):
-    """Save generated script to JSON file."""
+    """Save generated script to JSON file.
+    
+    Args:
+        script_data: Script dictionary to save
+        output_path: Full path where to save the script (default: root)
+    """
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(script_data, f, indent=2, ensure_ascii=False)
     print(f"✓ Script saved to {output_path}")

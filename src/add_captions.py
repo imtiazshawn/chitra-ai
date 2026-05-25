@@ -98,10 +98,53 @@ def split_into_word_chunks(text, max_words=3):
     return chunks
 
 
-def create_word_segments(video_map):
-    """Create word-level segments with equal time distribution."""
+def create_word_segments(video_map, transcript=None):
+    """Create word-level segments with timing from Whisper transcript.
+    
+    Args:
+        video_map: Video map with segments
+        transcript: Optional Whisper transcript with word-level timestamps
+    
+    Returns:
+        List of word segments with accurate timing
+    """
     word_segments = []
     
+    # If we have Whisper transcript with word-level timing, use it
+    if transcript and hasattr(transcript, 'words') and transcript.words:
+        print("Using Whisper word-level timestamps for accurate sync")
+        
+        # Group words into 3-word chunks
+        words = transcript.words
+        for i in range(0, len(words), 3):
+            chunk_words = words[i:i+3]
+            if not chunk_words:
+                continue
+            
+            # Get text and timing from Whisper
+            text = ' '.join([w['word'] for w in chunk_words])
+            start_time = chunk_words[0]['start']
+            end_time = chunk_words[-1]['end']
+            
+            # Find matching video_map segment for style
+            caption_style = 'professional'
+            for segment in video_map:
+                if segment['start_time'] <= start_time <= segment['end_time']:
+                    caption_style = segment.get('caption_style', 'professional')
+                    break
+            
+            word_segments.append({
+                'text': text,
+                'start': start_time,
+                'end': end_time,
+                'style': caption_style
+            })
+        
+        print(f"Created {len(word_segments)} word segments from Whisper timestamps")
+        return word_segments
+    
+    # Fallback: Use video_map timing (old method)
+    print("Warning: No Whisper word timestamps, using segment-based timing")
     for segment in video_map:
         text = segment.get('transcript_text', '').strip()
         if not text:

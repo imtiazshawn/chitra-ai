@@ -99,7 +99,7 @@ def run_pipeline(audio_file, logo_file, add_captions_flag, log_placeholder, outp
             </div>
             """, unsafe_allow_html=True)
             
-            word_segments = create_word_segments(video_map)
+            word_segments = create_word_segments(video_map, transcript)
             create_dynamic_highlight_subtitles(word_segments, video_map, paths['captions'])
             
             final_output = paths['final_output']
