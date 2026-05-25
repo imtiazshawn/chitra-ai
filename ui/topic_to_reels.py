@@ -24,7 +24,7 @@ def render_topic_to_reels():
     ffmpeg_ok = check_ffmpeg()
 
     # Header
-    render_header(agent_count=6)
+    render_header(agent_count=7)
 
     # Main Grid
     col_left, col_right = st.columns([1, 1.6])
@@ -127,6 +127,17 @@ def render_topic_to_reels():
                         <div class="agent-status">IDLE</div>
                     </div>
                     <div class="agent-desc">→ Generate word-level captions<br/>→ Burn subtitles and logo</div>
+                </div>
+            </div>
+            
+            <div class="agent-item">
+                <div class="agent-number">07</div>
+                <div class="agent-content">
+                    <div class="agent-header">
+                        <div class="agent-name">METADATA AGENT</div>
+                        <div class="agent-status">IDLE</div>
+                    </div>
+                    <div class="agent-desc">→ Generate viral titles & SEO tags<br/>→ Optimize for maximum reach</div>
                 </div>
             </div>
             </div>
@@ -245,17 +256,31 @@ def render_topic_to_reels():
                     """, unsafe_allow_html=True)
                     
                     log_placeholder.markdown(render_log("// [6/6] Subtitle Agent: Processing..."), unsafe_allow_html=True)
-                    word_segments = create_word_segments(video_map, transcript)
+                    word_segments = create_word_segments(video_map, transcript, paths['audio'])
                     create_dynamic_highlight_subtitles(word_segments, video_map, paths['captions'])
                     logo_for_caption = paths['logo'] if os.path.exists(paths['logo']) else None
                     burn_subtitles_and_logo(paths['draft_video'], paths['captions'], logo_for_caption, paths['final_output'])
                     final_output = paths['final_output']
                 
+                # Step 7: Metadata Agent
+                agent_status.markdown("""
+                <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1-6/6: Complete</div>
+                    <div style="color: #FF6B35; font-weight: bold; margin-top: 0.5rem;">🏷️ AGENT 7/7: Metadata Agent</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Generating SEO metadata...</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                log_placeholder.markdown(render_log("// [7/7] Metadata Agent: Generating SEO..."), unsafe_allow_html=True)
+                
+                from metadata_agent import generate_metadata_from_script
+                metadata_options = generate_metadata_from_script(script_data, paths['metadata'])
+                
                 # Final Status
                 agent_status.markdown(f"""
                 <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                     <div style="color: #00FF88; font-weight: bold;">✓ ALL AGENTS COMPLETE</div>
-                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Your reel is ready!</div>
+                    <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Your reel + SEO metadata is ready!</div>
                     <div style="color: #666; font-size: 0.75rem; margin-top: 0.25rem;">Project: {project_id}</div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -295,12 +320,51 @@ def render_topic_to_reels():
                         )
                     st.markdown('</div>', unsafe_allow_html=True)
                     
+                    # SEO Metadata Section
+                    st.markdown("""
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px;">
+                        <div style="color: #FF6B35; font-weight: bold; margin-bottom: 0.75rem;">🏷️ SEO METADATA (3 OPTIONS)</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Display 3 metadata options
+                    for i, option in enumerate(metadata_options, 1):
+                        st.markdown(f"""
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border: 1px solid #444; border-radius: 6px;">
+                            <div style="color: #FF6B35; font-weight: bold; font-size: 0.9rem; margin-bottom: 0.5rem;">OPTION {i}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        st.text_area(
+                            f"Title {i}",
+                            value=option['title'],
+                            height=60,
+                            key=f"title_{i}",
+                            label_visibility="collapsed"
+                        )
+                        
+                        st.text_area(
+                            f"Description {i}",
+                            value=option['description'],
+                            height=120,
+                            key=f"desc_{i}",
+                            label_visibility="collapsed"
+                        )
+                        
+                        st.text_area(
+                            f"Tags {i}",
+                            value=option['tags'],
+                            height=80,
+                            key=f"tags_{i}",
+                            label_visibility="collapsed"
+                        )
+                    
                     # Success message
                     st.markdown("""
                     <div style="margin-top: 1rem; padding: 1rem; background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 8px;">
                         <div style="color: #00FF88; font-weight: bold; margin-bottom: 0.5rem;">🎬 READY TO UPLOAD!</div>
                         <div style="color: #CCC; font-size: 0.85rem;">
-                            Your professional reel is ready for Instagram, TikTok, or YouTube Shorts
+                            Your professional reel + SEO metadata is ready for Instagram, TikTok, or YouTube Shorts
                         </div>
                     </div>
                     """, unsafe_allow_html=True)

@@ -2,6 +2,7 @@ import os
 import json
 import subprocess
 from collections import Counter
+from vad_utils import get_speech_timestamps, apply_vad_to_word_segments
 
 # ============================================================================
 # GLOBAL THEME PALETTE - Professional Reels Standard
@@ -98,15 +99,16 @@ def split_into_word_chunks(text, max_words=3):
     return chunks
 
 
-def create_word_segments(video_map, transcript=None):
-    """Create word-level segments with timing from Whisper transcript.
+def create_word_segments(video_map, transcript=None, audio_path=None):
+    """Create word-level segments with timing from Whisper transcript + VAD.
     
     Args:
         video_map: Video map with segments
         transcript: Optional Whisper transcript with word-level timestamps
+        audio_path: Path to audio file for VAD analysis
     
     Returns:
-        List of word segments with accurate timing
+        List of word segments with accurate timing (VAD-trimmed)
     """
     word_segments = []
     
@@ -114,7 +116,17 @@ def create_word_segments(video_map, transcript=None):
     if transcript and hasattr(transcript, 'words') and transcript.words:
         print("Using Whisper word-level timestamps for accurate sync")
         
-        # Group words into 3-word chunks
+        # Step 1: Get speech segments from VAD (when voice is actually active)
+        speech_segments = []
+        if audio_path and os.path.exists(audio_path):
+            print("Running Voice Activity Detection (VAD)...")
+            speech_segments = get_speech_timestamps(audio_path)
+            if speech_segments:
+                print(f"  Detected {len(speech_segments)} speech segments")
+                total_speech = sum(seg['end'] - seg['start'] for seg in speech_segments)
+                print(f"  Total speech time: {total_speech:.1f}s")
+        
+        # Step 2: Group words into 3-word chunks
         words = transcript.words
         for i in range(0, len(words), 3):
             chunk_words = words[i:i+3]
@@ -125,6 +137,22 @@ def create_word_segments(video_map, transcript=None):
             text = ' '.join([w['word'] for w in chunk_words])
             start_time = chunk_words[0]['start']
             end_time = chunk_words[-1]['end']
+            
+            # Step 3: Apply VAD trimming if available
+            if speech_segments:
+                # Trim chunk to only show during active speech
+                from vad_utils import trim_word_to_speech_segments
+                start_time, end_time = trim_word_to_speech_segments(
+                    start_time, 
+                    end_time, 
+                    speech_segments,
+                    buffer_ms=50  # 50ms buffer before speech ends
+                )
+            else:
+                # Fallback: Use simple 12% trim (old method)
+                duration = end_time - start_time
+                trimmed_duration = duration * 0.88
+                end_time = start_time + trimmed_duration
             
             # Find matching video_map segment for style
             caption_style = 'professional'
@@ -140,7 +168,7 @@ def create_word_segments(video_map, transcript=None):
                 'style': caption_style
             })
         
-        print(f"Created {len(word_segments)} word segments from Whisper timestamps")
+        print(f"Created {len(word_segments)} word segments with VAD timing")
         return word_segments
     
     # Fallback: Use video_map timing (old method)

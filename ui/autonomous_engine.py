@@ -336,7 +336,7 @@ def render_autonomous_engine():
                     """, unsafe_allow_html=True)
                     
                     log_placeholder.markdown(render_log("// [7/8] Subtitle Agent: Processing..."), unsafe_allow_html=True)
-                    word_segments = create_word_segments(video_map, transcript)
+                    word_segments = create_word_segments(video_map, transcript, paths['audio'])
                     create_dynamic_highlight_subtitles(word_segments, video_map, paths['captions'])
                     logo_for_caption = paths['logo'] if os.path.exists(paths['logo']) else None
                     burn_subtitles_and_logo(paths['draft_video'], paths['captions'], logo_for_caption, paths['final_output'])

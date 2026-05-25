@@ -3,6 +3,106 @@ import os
 import json
 from groq import Groq
 
+def generate_metadata_from_script(script_data, output_file='seo_metadata.json'):
+    """Generate SEO metadata from script and save to file.
+    
+    Args:
+        script_data: Script dictionary with hook, formatted_script, video_vibe
+        output_file: Full path where to save metadata JSON
+    
+    Returns:
+        List of metadata options (title, description, tags)
+    """
+    print("\n=== Metadata Agent: SEO Optimization ===")
+    
+    # Initialize Groq client
+    groq_api_key = os.getenv('GROQ_API_KEY')
+    if not groq_api_key or groq_api_key == 'your_groq_api_key_here':
+        raise ValueError("GROQ_API_KEY not configured in .env file")
+    
+    client = Groq(api_key=groq_api_key)
+    
+    # Extract script content
+    hook = script_data.get('hook', '')
+    formatted_script = script_data.get('formatted_script', [])
+    full_script = '\n'.join(formatted_script) if formatted_script else ''
+    video_vibe = script_data.get('video_vibe', 'professional')
+    
+    print("Generating SEO metadata...")
+    
+    prompt = f"""You are a YouTube SEO expert specializing in viral short-form content.
+
+Video Script:
+{hook}
+{full_script}
+
+Video Vibe: {video_vibe}
+
+Generate 3 different options for:
+
+1. VIRAL TITLE (each under 60 characters, curiosity-driven, no clickbait)
+2. SEO DESCRIPTION (2-3 sentences with relevant keywords and 3-5 hashtags)
+3. TAGS (8-10 optimized tags for YouTube/Instagram algorithm)
+
+Format your response EXACTLY like this:
+
+OPTION 1:
+Title: [title here]
+Description: [description here with #hashtags]
+Tags: tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8
+
+OPTION 2:
+Title: [title here]
+Description: [description here with #hashtags]
+Tags: tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8
+
+OPTION 3:
+Title: [title here]
+Description: [description here with #hashtags]
+Tags: tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8"""
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=1000
+        )
+        
+        raw_output = response.choices[0].message.content.strip()
+        
+        # Parse the output into structured format
+        metadata_options = parse_metadata_output(raw_output)
+        
+        # Save to file
+        metadata = {
+            'options': metadata_options,
+            'video_vibe': video_vibe,
+            'raw_output': raw_output
+        }
+        
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=2, ensure_ascii=False)
+        
+        print(f"✓ Generated {len(metadata_options)} SEO options")
+        print(f"✓ Saved to {output_file}")
+        
+        # Return formatted options for UI display
+        formatted_options = []
+        for option in metadata_options:
+            formatted_options.append({
+                'title': option.get('title', ''),
+                'description': option.get('description', ''),
+                'tags': ', '.join(option.get('tags', []))
+            })
+        
+        return formatted_options
+        
+    except Exception as e:
+        print(f"Error generating metadata: {str(e)}")
+        raise
+
+
 def generate_seo_metadata(script_data):
     """Generate viral titles, SEO descriptions, and tags for the video."""
     print("\n=== Metadata Agent: SEO Optimization ===\n")

@@ -26,13 +26,14 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - **Step 2**: Synthesize audio using ElevenLabs professional voices (Voice Agent)
 - Use Audio to Reels for video generation
 
-### Topic to Reels (Active - 80% Automation)
+### Topic to Reels (Active - 85% Automation)
 - **Step 1**: Generate high-retention script from topic using AI (Script Agent)
 - **Step 2**: Synthesize professional voiceover (Voice Agent)
 - **Step 3**: Transcribe and map visuals (Intelligence Agent)
 - **Step 4**: Download videos from Pexels (Download Agent)
 - **Step 5**: Assemble video with perfect sync (Assembly Agent)
-- **Step 6**: Add professional captions (Subtitle Agent)
+- **Step 6**: Add professional captions with breath-aware timing (Subtitle Agent)
+- **Step 7**: Generate viral titles, SEO descriptions, and tags (Metadata Agent)
 
 ### Full Automation (Active - 100% Automation)
 - **Step 1**: Analyze YouTube channel and suggest trending topic (Spy Agent)
@@ -52,8 +53,9 @@ A Python-based AI Video Agent system with multiple pipelines for automated video
 - ** Agent-Based**: Each step handled by specialized autonomous agents
 - ** State Management**: Smart UI controls prevent accidental clicks
 - ** Cancel Control**: Stop processing at any time with cleanup
-- ** Seamless Looping**: Video clips loop infinitely to match audio duration
+- ** Breath-Aware Subtitles**: Captions hide during natural speech pauses/breaths
 - ** Professional SEO**: Copy-paste ready metadata in text areas
+- ** Story-Driven Scripts**: Conversational, human-like scripts with hooks and examples
 
 ## Setup
 
@@ -124,9 +126,10 @@ Then open your browser to the URL shown (usually http://localhost:8501)
 
 **Topic to Reels Features:**
 - Enter topic/idea
-- Complete 6-agent automation pipeline
-- AI generates script → synthesizes voice → creates video
-- Professional captions with word-level highlighting
+- Complete 7-agent automation pipeline
+- AI generates script → synthesizes voice → creates video → SEO metadata
+- Professional captions with breath-aware timing (no subtitle during pauses)
+- 3 SEO options with viral titles, descriptions, and tags
 - Download final reel
 - Video preview
 
@@ -162,8 +165,9 @@ python src/script_agent.py
 ```
 This creates `generated_script.json` with:
 - High-retention 40-50s script
-- Hook, tension, solution, CTA structure
-- Senior Architect writing style
+- Story-driven structure with hook, example, reveal, CTA
+- Conversational, human tone (not robotic)
+- Concrete examples and emotional connection
 - Punchy segments (5-12 words per line)
 - Optional [Director Cues] for tone, pacing, silences (max 4-5 per script)
 - Suggested video vibe
@@ -244,6 +248,7 @@ This creates `final_output.mp4` with:
 - **56px mobile-optimized font** (75% larger than before)
 - **Global theme consistency** (one color + font per video)
 - **Word-level dynamic highlighting** with smooth pop animations
+- **Breath-aware timing** (12% duration trim to hide during pauses)
 - **3px black outline + 1.5px shadow** for perfect visibility
 - **85% opacity passive words** for clear focus
 - **Vibe-based font selection** (Tech, Energetic, Professional, etc.)

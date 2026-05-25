@@ -37,10 +37,10 @@ PIPELINES = [
     {
         "id": "topic_to_reels",
         "name": "Topic to Reels",
-        "description": "Complete automation: Topic → Script → Speech → Video. AI handles everything from idea to final reel.",
-        "lazy_level": 80,
+        "description": "Complete automation: Topic → Script → Speech → Video → SEO. AI handles everything from idea to final reel.",
+        "lazy_level": 85,
         "status": "active",
-        "agents": 6
+        "agents": 7
     },
     {
         "id": "autonomous_engine",
