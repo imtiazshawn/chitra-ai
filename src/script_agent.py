@@ -7,33 +7,46 @@ load_dotenv()
 
 groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
-# High-retention script structure with optional reading instructions
-SCRIPT_PROMPT_TEMPLATE = """You are an expert content creator. Generate a 40-50 second high-retention video script for ANY topic.
+# Professional YouTube Shorts script structure
+SCRIPT_PROMPT_TEMPLATE = """You are an 11-year veteran YouTube Shorts creator with millions of views. Generate a 40-50 second story-driven script.
 
 Topic: {topic}
 
-STRUCTURE (strict timing):
-[0-5s] THE HOOK: Bold claim, shocking stat, or direct pain point question. No fluff.
-[5-20s] THE TENSION: Agitate the problem. Why the status quo fails.
-[20-40s] THE SOLUTION: The unique insight. Punchy, authoritative.
-[40-50s] THE CTA: Sharp closing statement.
+STRUCTURE:
+[0-3s] PATTERN INTERRUPT HOOK: Question, controversial statement, or relatable scenario that stops scrolling
+[3-15s] STORY/EXAMPLE: Concrete scenario viewers can visualize. Make it REAL, not abstract
+[15-35s] THE REVEAL: Explain the insight with WHY it works. Use mini-examples or demonstrations
+[35-40s] AUTHORITY (optional): Brief social proof if relevant ("FBI uses this", "Studies show...")
+[40-50s] STRONG CTA: Specific action ("Try this tonight"), engagement ask ("Comment if..."), NOT generic
 
-STYLE RULES:
-- Brutally honest, high-value content
-- NO generic AI phrases: "In the world of", "Unlock your potential", "Embark on a journey"
-- Match the tone to the topic (professional, entertaining, educational, inspirational)
-- Fast-paced, retention-focused
-- Each line must be a COMPLETE THOUGHT or SENTENCE (5-12 words)
-- Natural flow, coherent sentences
-- Focus ONLY on the SPECIFIC topic provided
+WRITING STYLE:
+- Conversational tone like talking to a friend at a bar
+- Use contractions, casual language ("You know that..." not "One must consider...")
+- Story-driven with concrete examples, NOT abstract facts
+- Emotional connection - make viewer FEEL something (curiosity, fear, excitement)
+- Each line: 5-12 words, complete thought
+- NO robotic phrases: "status quo", "embark on", "unlock potential"
+- Write like a HUMAN creator, not a Wikipedia article
+
+EXAMPLE STRUCTURE (for reference only):
+"Your friend just lied to you. And you missed it."
+"Here's the thing - liars need time to construct their story."
+"Truth? That's instant. No thinking required."
+"It's called the 3-second delay rule."
+"Ask a question. Count silently. More than 3 seconds? Red flag."
+"Where were you last night? Honest person: immediate answer."
+"Liar: Uhh... I was... at the gym. Yeah, gym."
+"FBI interrogators use this in every interview."
+"Try it tonight at dinner. You'll be shocked."
 
 OUTPUT FORMAT (JSON only):
 {{
   "formatted_script": [
-    "Complete sentence about the hook (5-12 words).",
-    "Another complete sentence building tension (5-12 words).",
-    "The key insight that changes perspective (5-12 words).",
-    "Sharp closing statement that demands action (5-12 words)."
+    "Hook sentence that stops scrolling (5-12 words).",
+    "Story setup with concrete scenario (5-12 words).",
+    "Build the narrative naturally (5-12 words).",
+    "Reveal the insight with example (5-12 words).",
+    "Specific actionable CTA (5-12 words)."
   ],
   "video_vibe": "professional|dramatic|energetic|aggressive|modern|playful|calm",
   "hook": "First sentence",
@@ -42,48 +55,53 @@ OUTPUT FORMAT (JSON only):
 
 Generate the script now. Return ONLY valid JSON."""
 
-SCRIPT_PROMPT_WITH_INSTRUCTIONS = """You are an expert content creator. Generate a 40-50 second high-retention video script WITH minimal reading instructions for ANY topic.
+SCRIPT_PROMPT_WITH_INSTRUCTIONS = """You are an 11-year veteran YouTube Shorts creator with millions of views. Generate a 40-50 second story-driven script WITH minimal reading instructions.
 
 Topic: {topic}
 
-STRUCTURE (strict timing):
-[0-5s] THE HOOK: Bold claim, shocking stat, or direct pain point question. No fluff.
-[5-20s] THE TENSION: Agitate the problem. Why the status quo fails.
-[20-40s] THE SOLUTION: The unique insight. Punchy, authoritative.
-[40-50s] THE CTA: Sharp closing statement.
+STRUCTURE:
+[0-3s] PATTERN INTERRUPT HOOK: Question, controversial statement, or relatable scenario that stops scrolling
+[3-15s] STORY/EXAMPLE: Concrete scenario viewers can visualize. Make it REAL, not abstract
+[15-35s] THE REVEAL: Explain the insight with WHY it works. Use mini-examples or demonstrations
+[35-40s] AUTHORITY (optional): Brief social proof if relevant ("FBI uses this", "Studies show...")
+[40-50s] STRONG CTA: Specific action ("Try this tonight"), engagement ask ("Comment if..."), NOT generic
 
-STYLE RULES:
-- Brutally honest, high-value content
-- NO generic AI phrases: "In the world of", "Unlock your potential", "Embark on a journey"
-- Match the tone to the topic (professional, entertaining, educational, inspirational)
-- Fast-paced, retention-focused
-- Each line must be a COMPLETE THOUGHT or SENTENCE (5-12 words)
-- Natural flow, coherent sentences
-- Focus ONLY on the SPECIFIC topic provided
+WRITING STYLE:
+- Conversational tone like talking to a friend at a bar
+- Use contractions, casual language ("You know that..." not "One must consider...")
+- Story-driven with concrete examples, NOT abstract facts
+- Emotional connection - make viewer FEEL something (curiosity, fear, excitement)
+- Each line: 5-12 words, complete thought
+- NO robotic phrases: "status quo", "embark on", "unlock potential"
+- Write like a HUMAN creator, not a Wikipedia article
 
 READING INSTRUCTIONS (CRITICAL RULES):
 - Add ONLY 4-5 instructions for the ENTIRE script
-- Place instructions ONLY at major section transitions (Hook, Problem, Solution, CTA)
+- Place instructions ONLY at major section transitions (Hook, Story, Reveal, CTA)
 - Do NOT add instructions for every line
 - Use [Micro beat] for 0.2s pauses instead of long silences
-- Format: [Hook – Aggressive & Fast], [Micro beat], [Punchline – Serious tone]
-- Keep pacing FAST and PUNCHY for high-retention
+- Format: [Hook – Intriguing & Fast], [Micro beat], [Reveal – Confident tone]
+- Keep pacing FAST and CONVERSATIONAL for high-retention
 
-EXAMPLE STRUCTURE (DO NOT COPY CONTENT):
+EXAMPLE STRUCTURE (for reference only):
 {{
   "formatted_script": [
-    "[Hook – Aggressive & Fast]",
-    "Opening statement about YOUR topic (5-12 words)",
+    "[Hook – Intriguing & Fast]",
+    "Your friend just lied to you. And you missed it.",
     "[Micro beat]",
-    "Build tension specific to YOUR topic (5-12 words)",
-    "Continue argument with authority (5-12 words)",
-    "Deliver key insight for YOUR topic (5-12 words)",
-    "[Punchline – Serious tone]",
-    "Solution statement (5-12 words)",
-    "Sharp closing CTA (5-12 words)"
+    "Here's the thing - liars need time to construct their story.",
+    "Truth? That's instant. No thinking required.",
+    "It's called the 3-second delay rule.",
+    "[Reveal – Confident tone]",
+    "Ask a question. Count silently. More than 3 seconds? Red flag.",
+    "Where were you last night? Honest person: immediate answer.",
+    "Liar: Uhh... I was... at the gym. Yeah, gym.",
+    "FBI interrogators use this in every interview.",
+    "[CTA – Encouraging]",
+    "Try it tonight at dinner. You'll be shocked."
   ],
-  "video_vibe": "professional|dramatic|energetic|aggressive|modern|playful|calm",
-  "hook": "First sentence",
+  "video_vibe": "professional",
+  "hook": "Your friend just lied to you. And you missed it.",
   "estimated_duration": 45
 }}
 
@@ -91,10 +109,13 @@ OUTPUT FORMAT (JSON only):
 {{
   "formatted_script": [
     "[Hook – tone description]",
-    "Complete sentence (5-12 words).",
-    "Another complete sentence (5-12 words).",
+    "Hook sentence (5-12 words).",
+    "[Micro beat]",
+    "Story sentence (5-12 words).",
+    "Continue narrative (5-12 words).",
     "[Instruction only at major transition]",
-    "Complete sentence (5-12 words)."
+    "Reveal insight (5-12 words).",
+    "Specific CTA (5-12 words)."
   ],
   "video_vibe": "professional|dramatic|energetic|aggressive|modern|playful|calm",
   "hook": "First sentence",
