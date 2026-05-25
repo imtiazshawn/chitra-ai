@@ -7,7 +7,8 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from ui.components import render_log, render_header, render_status_cards
-from assemble_video import check_ffmpeg
+from assemble_video import check_ffmpeg, get_video_duration
+from workspace_manager import create_unique_project_folder, get_project_paths, cleanup_project_temp
 
 def render_topic_to_reels():
     """Render the Topic to Reels full automation pipeline"""
@@ -153,11 +154,14 @@ def render_topic_to_reels():
             log_placeholder.markdown(render_log("// ERROR: PEXELS_API_KEY not configured", is_error=True), unsafe_allow_html=True)
         else:
             try:
-                from script_agent import generate_script, save_script
+                # Create unique project folder
+                project_folder, project_id = create_unique_project_folder("topic_to_reels")
+                paths = get_project_paths(project_folder)
+                
+                from script_agent import generate_script
                 from speech_agent import generate_speech_from_script
-                from main import transcribe_audio, create_video_map, save_video_map
-                from download_videos import download_videos_for_map
-                from assemble_video import assemble_video_with_complex_filter
+                from main import transcribe_audio, create_video_map
+                from ui.pipeline import download_video_to_project, preprocess_clip, assemble_video
                 from add_captions import create_word_segments, create_dynamic_highlight_subtitles, burn_subtitles_and_logo
                 import json
                 
@@ -171,7 +175,10 @@ def render_topic_to_reels():
                 
                 log_placeholder.markdown(render_log("// [1/6] Script Agent: Generating..."), unsafe_allow_html=True)
                 script_data = generate_script(topic, add_reading_instructions=True)
-                save_script(script_data)
+                
+                # Save script to project folder
+                with open(paths['script'], 'w', encoding='utf-8') as f:
+                    json.dump(script_data, f, indent=2, ensure_ascii=False)
                 
                 # Step 2: Voice Synthesis
                 agent_status.markdown("""
@@ -183,9 +190,9 @@ def render_topic_to_reels():
                 """, unsafe_allow_html=True)
                 
                 log_placeholder.markdown(render_log("// [2/6] Voice Agent: Synthesizing..."), unsafe_allow_html=True)
-                audio_path = generate_speech_from_script(script_data, "audio.mp3")
+                audio_path = generate_speech_from_script(script_data, paths['audio'])
                 
-                # Step 3: Intelligence Agent (Transcription + Video Mapping)
+                # Step 3: Intelligence Agent
                 agent_status.markdown("""
                 <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                     <div style="color: #00FF88; font-weight: bold;">✓ AGENT 1-2/6: Complete</div>
@@ -195,9 +202,12 @@ def render_topic_to_reels():
                 """, unsafe_allow_html=True)
                 
                 log_placeholder.markdown(render_log("// [3/6] Intelligence Agent: Mapping..."), unsafe_allow_html=True)
-                transcript = transcribe_audio(audio_path)
+                transcript = transcribe_audio(paths['audio'])
                 video_map = create_video_map(transcript)
-                save_video_map(video_map)
+                
+                # Save video map to project folder
+                with open(paths['video_map'], 'w', encoding='utf-8') as f:
+                    json.dump(video_map, f, indent=2, ensure_ascii=False)
                 
                 # Step 4: Download Agent
                 agent_status.markdown("""
@@ -209,7 +219,7 @@ def render_topic_to_reels():
                 """, unsafe_allow_html=True)
                 
                 log_placeholder.markdown(render_log("// [4/6] Download Agent: Fetching..."), unsafe_allow_html=True)
-                download_videos_for_map(video_map)
+                successful = sum(1 for i, segment in enumerate(video_map, 1) if download_video_to_project(segment, i, paths['assets']))
                 
                 # Step 5: Assembly Agent
                 agent_status.markdown("""
@@ -221,9 +231,10 @@ def render_topic_to_reels():
                 """, unsafe_allow_html=True)
                 
                 log_placeholder.markdown(render_log("// [5/6] Assembly Agent: Compiling..."), unsafe_allow_html=True)
-                assemble_video_with_complex_filter(video_map, audio_path, "draft_video.mp4")
+                assemble_video(video_map, paths['audio'], paths['draft_video'], paths['assets'], paths['temp'])
                 
                 # Step 6: Subtitle Agent (if enabled)
+                final_output = paths['draft_video']
                 if add_captions:
                     agent_status.markdown("""
                     <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
@@ -235,45 +246,50 @@ def render_topic_to_reels():
                     
                     log_placeholder.markdown(render_log("// [6/6] Subtitle Agent: Processing..."), unsafe_allow_html=True)
                     word_segments = create_word_segments(video_map)
-                    subtitle_file = create_dynamic_highlight_subtitles(word_segments, video_map)
-                    burn_subtitles_and_logo("draft_video.mp4", subtitle_file, "logo.png", "final_output.mp4")
-                    final_video = "final_output.mp4"
-                else:
-                    final_video = "draft_video.mp4"
+                    create_dynamic_highlight_subtitles(word_segments, video_map, paths['captions'])
+                    logo_for_caption = paths['logo'] if os.path.exists(paths['logo']) else None
+                    burn_subtitles_and_logo(paths['draft_video'], paths['captions'], logo_for_caption, paths['final_output'])
+                    final_output = paths['final_output']
                 
                 # Final Status
-                agent_status.markdown("""
+                agent_status.markdown(f"""
                 <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00FF88; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                     <div style="color: #00FF88; font-weight: bold;">✓ ALL AGENTS COMPLETE</div>
                     <div style="color: #888; font-size: 0.85rem; margin-top: 0.25rem;">Your reel is ready!</div>
+                    <div style="color: #666; font-size: 0.75rem; margin-top: 0.25rem;">Project: {project_id}</div>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                log_placeholder.markdown(render_log("// ✓ PIPELINE COMPLETE"), unsafe_allow_html=True)
+                log_placeholder.markdown(render_log(f"// ✓ PIPELINE COMPLETE - {project_id}"), unsafe_allow_html=True)
+                
+                # Cleanup
+                cleanup_project_temp(project_folder)
                 
                 # Display output
+                video_duration = get_video_duration(final_output)
+                
                 with output_placeholder.container():
                     st.markdown(f"""
                     <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid #FF6B35; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
                         <div style="color: #FF6B35; font-weight: bold; margin-bottom: 0.5rem;">GENERATED REEL</div>
                         <div style="color: #888; font-size: 0.85rem;">
                             Vibe: {script_data.get('video_vibe', 'professional').upper()} | 
-                            Duration: ~{script_data.get('estimated_duration', 45)}s
+                            Duration: {video_duration:.1f}s
                         </div>
                     </div>
                     """, unsafe_allow_html=True)
                     
                     # Video preview
-                    if os.path.exists(final_video):
-                        st.video(final_video)
+                    if os.path.exists(final_output):
+                        st.video(final_output)
                     
                     # Download button
                     st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
-                    if os.path.exists(final_video):
+                    if os.path.exists(final_output):
                         st.download_button(
                             "📥 DOWNLOAD REEL",
-                            data=open(final_video, 'rb').read(),
-                            file_name=final_video,
+                            data=open(final_output, 'rb').read(),
+                            file_name=f"{project_id}.mp4",
                             mime='video/mp4',
                             use_container_width=True
                         )
