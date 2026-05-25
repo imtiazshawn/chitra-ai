@@ -14,12 +14,8 @@ requests==2.31.0
 # Audio processing
 pydub==0.25.1
 
-# Voice Activity Detection (OPTIONAL - for better subtitle timing)
-# If you get DLL errors on Windows, you can skip these:
-# torch>=2.0.0
-# torchaudio>=2.0.0
-# silero-vad>=4.0.0
-# System will fallback to 12% trim method without VAD
+# Precise word-level alignment (RECOMMENDED for perfect subtitle sync)
+whisperx>=3.1.1
 
 # Web interface
 streamlit==1.31.0
